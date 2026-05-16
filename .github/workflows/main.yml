@@ -1,15 +1,19 @@
 name: Build Android APK
 on: [push]
 
+# Forza l'uso di Node 24 per evitare i warning di GitHub
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4 # Aggiornato a v4
+      - uses: actions/checkout@v4
       
-      - uses: actions/setup-node@v4 # Aggiornato a v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20 # Usiamo una versione di Node più recente
+          node-version: 24 # Usiamo l'ultima versione disponibile
           
       - name: Install Dependencies
         run: npm install
@@ -27,7 +31,7 @@ jobs:
           ./gradlew assembleDebug
           
       - name: Upload APK
-        uses: actions/upload-artifact@v4 # <--- Questo risolve l'errore (v4)
+        uses: actions/upload-artifact@v4
         with:
           name: app-debug
           path: android/app/build/outputs/apk/debug/app-debug.apk
