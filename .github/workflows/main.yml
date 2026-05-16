@@ -1,10 +1,6 @@
 name: Build Android APK
 on: [push]
 
-# Forza l'uso di Node 24 per evitare i warning di GitHub
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -13,7 +9,7 @@ jobs:
       
       - uses: actions/setup-node@v4
         with:
-          node-version: 24 # Usiamo l'ultima versione disponibile
+          node-version: '20' # Rimaniamo sulla 20 finché GitHub non aggiorna le sue azioni
           
       - name: Install Dependencies
         run: npm install
