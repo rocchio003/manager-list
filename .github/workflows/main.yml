@@ -9,7 +9,7 @@ jobs:
       
       - uses: actions/setup-node@v4
         with:
-          node-version: '20' # Rimaniamo sulla 20 finché GitHub non aggiorna le sue azioni
+          node-version: 20
           
       - name: Install Dependencies
         run: npm install
