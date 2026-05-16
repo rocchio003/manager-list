@@ -5,22 +5,29 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4 # Aggiornato a v4
+      
+      - uses: actions/setup-node@v4 # Aggiornato a v4
         with:
-          node-version: 18
+          node-version: 20 # Usiamo una versione di Node più recente
+          
       - name: Install Dependencies
         run: npm install
+        
       - name: Add Android Platform
         run: npx cap add android
+        
       - name: Copy Web Assets
         run: npx cap copy
+        
       - name: Build Android Project
         run: |
           cd android
+          chmod +x gradlew
           ./gradlew assembleDebug
+          
       - name: Upload APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4 # <--- Questo risolve l'errore (v4)
         with:
-          name: app-debug.apk
+          name: app-debug
           path: android/app/build/outputs/apk/debug/app-debug.apk
