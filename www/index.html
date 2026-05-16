@@ -1,1 +1,1042 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPTV Manager — Sparkle TV</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0b0c0e;
+  --surface: #13151a;
+  --surface2: #1a1d24;
+  --surface3: #21252e;
+  --border: #252932;
+  --border2: #2e3340;
+  --accent: #c8f135;
+  --accent2: #3dffc8;
+  --red: #ff4f4f;
+  --orange: #ffaa3d;
+  --blue: #5b9cf6;
+  --text: #e2e6ef;
+  --muted: #6b7280;
+  --muted2: #9ca3af;
+  --font: 'Syne', sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+  --r: 10px; --r2: 14px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; overflow-x: hidden; }
+
+/* ── LAYOUT ── */
+.app { max-width: 960px; margin: 0 auto; padding: 1.75rem 1.25rem 5rem; }
+
+/* ── HEADER ── */
+.header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.75rem; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-icon { width: 40px; height: 40px; background: var(--accent); border-radius: 10px; display: grid; place-items: center; flex-shrink: 0; }
+.brand-icon svg { width: 22px; height: 22px; }
+.brand-name { font-size: 21px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+.brand-sub { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-top: 3px; }
+.header-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+/* ── TV MODE BADGE ── */
+.tv-badge { font-size: 10px; font-family: var(--mono); background: var(--surface2); border: 1px solid var(--border2); color: var(--muted2); padding: 3px 10px; border-radius: 20px; display: none; }
+body.tv-mode .tv-badge { display: inline-flex; align-items: center; gap: 5px; }
+
+/* ── REMOTE HINT BAR ── */
+.remote-bar { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 8px 14px; margin-bottom: 1rem; font-size: 11px; font-family: var(--mono); color: var(--muted); gap: 16px; flex-wrap: wrap; align-items: center; }
+body.tv-mode .remote-bar { display: flex; }
+.rkey { background: var(--surface2); border: 1px solid var(--border2); border-radius: 5px; padding: 2px 7px; color: var(--text); font-size: 11px; }
+
+/* ── BUTTONS ── */
+.btn { border: 1px solid var(--border2); background: var(--surface); color: var(--text); padding: 8px 16px; border-radius: var(--r); font-size: 13px; font-family: var(--font); font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.14s; white-space: nowrap; line-height: 1; }
+.btn:hover { border-color: var(--muted); background: var(--surface2); }
+.btn:active { transform: scale(0.97); }
+.btn-accent { background: var(--accent); color: #0b0c0e; border-color: var(--accent); }
+.btn-accent:hover { background: #d6ff4a; }
+.btn-sm { padding: 5px 12px; font-size: 12px; border-radius: 8px; }
+.btn-xs { padding: 4px 9px; font-size: 11px; border-radius: 7px; }
+.btn-icon { padding: 5px 9px; }
+.btn-danger { border-color: #3a1818; color: var(--red); }
+.btn-danger:hover { background: #1e0e0e; border-color: var(--red); }
+
+/* ── TV MODE BUTTONS — più grandi e spaziosi ── */
+body.tv-mode .btn { padding: 12px 22px; font-size: 15px; border-radius: 12px; }
+body.tv-mode .btn-sm { padding: 10px 18px; font-size: 14px; }
+body.tv-mode .btn-xs { padding: 9px 15px; font-size: 13px; border-radius: 10px; }
+body.tv-mode .btn-icon { padding: 10px 14px; font-size: 16px; }
+body.tv-mode .app { max-width: 100%; padding: 1.5rem 2.5rem 4rem; }
+body.tv-mode .brand-name { font-size: 26px; }
+body.tv-mode .brand-sub { font-size: 13px; }
+body.tv-mode .card { padding: 1.25rem 1.5rem; border-radius: 16px; margin-bottom: 14px; }
+body.tv-mode .card-name { font-size: 18px; }
+body.tv-mode .fields { font-size: 14px; gap: 6px 14px; margin-bottom: 14px; }
+body.tv-mode .fl { font-size: 13px; }
+body.tv-mode .fv { font-size: 14px; }
+body.tv-mode .card-actions { gap: 8px; }
+body.tv-mode .tabs { gap: 6px; padding: 6px; }
+body.tv-mode .tab { padding: 11px 28px; font-size: 15px; border-radius: 10px; }
+body.tv-mode .section-sep { font-size: 12px; margin: 2rem 0 1rem; }
+body.tv-mode .epg-card { padding: 1.25rem 1.5rem; }
+body.tv-mode .epg-name { font-size: 18px; }
+body.tv-mode .badge { font-size: 12px; padding: 4px 10px; }
+
+/* ── FOCUS TV ── */
+:focus { outline: none; }
+.tv-focus {
+  outline: 4px solid var(--accent) !important;
+  outline-offset: 4px !important;
+  box-shadow: 0 0 0 8px rgba(200,241,53,0.22), 0 0 24px rgba(200,241,53,0.12) !important;
+  border-color: var(--accent) !important;
+  position: relative; z-index: 10;
+  transform: scale(1.03);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+body.tv-mode .tv-focus { transform: scale(1.05); outline-width: 5px !important; }
+.tab.tv-focus { background: var(--surface3) !important; color: var(--text) !important; }
+
+/* ── GIST BAR ── */
+.gist-bar { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--r); padding: 10px 14px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.gist-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+.gist-dot.ok { background: var(--accent); }
+.gist-dot.syncing { background: var(--orange); animation: blink 0.9s infinite; }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:.3} }
+.gist-info { flex: 1; min-width: 0; }
+.gist-label { font-size: 12px; font-weight: 700; }
+.gist-sub { font-size: 10px; color: var(--muted); font-family: var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gist-btns { display: flex; gap: 6px; }
+
+/* ── TABS ── */
+.tabs { display: flex; gap: 4px; margin-bottom: 1.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 4px; width: fit-content; }
+.tab { padding: 7px 20px; border-radius: 7px; font-size: 13px; font-weight: 700; cursor: pointer; color: var(--muted2); transition: all 0.14s; border: none; background: none; font-family: var(--font); display: flex; align-items: center; gap: 7px; }
+.tab:hover { color: var(--text); }
+.tab.active { background: var(--surface3); color: var(--text); }
+.tab-count { font-size: 10px; background: var(--surface3); color: var(--muted2); padding: 1px 6px; border-radius: 20px; font-family: var(--mono); }
+.tab.active .tab-count { background: var(--border2); color: var(--text); }
+
+/* ── SECTIONS ── */
+.section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.section-label { font-size: 10px; font-family: var(--mono); letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase; }
+.section-sep { font-size: 10px; font-family: var(--mono); letter-spacing: 0.10em; color: var(--muted); text-transform: uppercase; margin: 1.75rem 0 0.7rem; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+
+/* ── CARDS ── */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r2); padding: 1rem 1.25rem; margin-bottom: 10px; transition: border-color 0.14s; }
+.card:hover { border-color: var(--border2); }
+.card-top { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-bottom: 10px; flex-wrap: wrap; }
+.card-name { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.card-meta { font-size: 11px; font-family: var(--mono); color: var(--muted); white-space: nowrap; }
+.badge { font-size: 10px; font-family: var(--mono); padding: 2px 8px; border-radius: 20px; font-weight: 500; letter-spacing: .03em; }
+.b-ok   { background:#162806; color:var(--accent); }
+.b-soon { background:#2c1e04; color:var(--orange); }
+.b-exp  { background:#2c0808; color:var(--red); }
+.b-unk  { background:var(--surface2); color:var(--muted2); }
+.b-m3u  { background:#0c1f38; color:var(--blue); }
+.b-epg  { background:#1e1038; color:#b08bff; }
+.fields { display: grid; grid-template-columns: 72px 1fr; gap: 3px 10px; font-size: 12px; margin-bottom: 10px; align-items: center; }
+.fl { color: var(--muted); font-family: var(--mono); font-size: 11px; }
+.fv { font-family: var(--mono); color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+.fv-url { color: var(--muted2); font-size: 11px; }
+.note-line { font-size: 11px; color: var(--muted); margin-bottom: 10px; display: flex; align-items: flex-start; gap: 5px; }
+.card-actions { display: flex; gap: 5px; flex-wrap: wrap; }
+
+/* ── EPG CARD ── */
+.epg-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r2); padding: 1rem 1.25rem; margin-bottom: 10px; }
+.epg-top { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-bottom: 8px; flex-wrap: wrap; }
+.epg-name { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.epg-url { font-family: var(--mono); font-size: 11px; color: var(--muted2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 10px; }
+.epg-actions { display: flex; gap: 5px; flex-wrap: wrap; }
+
+/* ── EMPTY ── */
+.empty { text-align: center; padding: 4rem 1rem; color: var(--muted); }
+.empty-icon { font-size: 36px; margin-bottom: 12px; }
+.empty p { font-size: 14px; margin-bottom: 6px; }
+.empty small { font-size: 12px; font-family: var(--mono); }
+
+/* ── MODAL ── */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,.75); display: none; align-items: center; justify-content: center; z-index: 200; padding: 1rem; }
+.overlay.open { display: flex; }
+.modal { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--r2); padding: 1.75rem; width: 100%; max-width: 520px; max-height: 92vh; overflow-y: auto; }
+.modal-title { font-size: 17px; font-weight: 800; margin-bottom: 1.5rem; letter-spacing: -.02em; }
+.fg { margin-bottom: 13px; }
+.fl2 { font-size: 10px; font-family: var(--mono); color: var(--muted); margin-bottom: 5px; display: block; letter-spacing: .07em; text-transform: uppercase; }
+input[type=text], input[type=password], input[type=url], select, textarea {
+  width: 100%; background: var(--bg); border: 1px solid var(--border2); color: var(--text);
+  padding: 9px 12px; border-radius: 8px; font-size: 13px; font-family: var(--mono);
+  outline: none; transition: border-color .15s; resize: vertical;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+select option { background: var(--surface2); }
+.frow2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 1.5rem; }
+.hint { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-top: -6px; margin-bottom: 12px; line-height: 1.5; }
+.hint code { background: var(--surface2); padding: 1px 5px; border-radius:4px; font-family:var(--mono); font-size:10px; }
+
+/* ── TV MODE MODAL ── */
+body.tv-mode .modal { max-width: 680px; padding: 2.25rem; }
+body.tv-mode .modal-title { font-size: 22px; margin-bottom: 2rem; }
+body.tv-mode .fg { margin-bottom: 18px; }
+body.tv-mode .fl2 { font-size: 12px; margin-bottom: 7px; }
+body.tv-mode input[type=text],
+body.tv-mode input[type=password],
+body.tv-mode input[type=url],
+body.tv-mode select { padding: 13px 16px; font-size: 15px; border-radius: 10px; }
+body.tv-mode .modal-footer { gap: 12px; margin-top: 2rem; }
+
+/* ── GIST SETUP STEPS ── */
+.step { display: flex; gap: 11px; margin-bottom: 13px; }
+.step-n { width: 21px; height: 21px; background: var(--accent); color: #0b0c0e; border-radius: 50%; font-size: 11px; font-weight: 800; display: grid; place-items: center; flex-shrink: 0; margin-top: 2px; }
+.step-b { font-size: 13px; line-height: 1.6; }
+.step-b a { color: var(--accent2); text-decoration: none; }
+.step-b code { background: var(--surface2); padding: 1px 5px; border-radius: 4px; font-family: var(--mono); font-size: 11px; }
+
+/* ── TOAST ── */
+.toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(70px); background: var(--surface2); border: 1px solid var(--border2); color: var(--text); padding: 10px 20px; border-radius: var(--r); font-size: 13px; font-family: var(--mono); opacity: 0; transition: all .22s; z-index: 400; white-space: nowrap; max-width: 92vw; overflow: hidden; text-overflow: ellipsis; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+body.tv-mode .toast { font-size: 16px; padding: 14px 28px; bottom: 2.5rem; }
+
+/* ── SPINNER ── */
+.spin { width: 13px; height: 13px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: rot .65s linear infinite; display: inline-block; flex-shrink: 0; }
+@keyframes rot { to{transform:rotate(360deg)} }
+
+/* ── SAVE HINT ── */
+.save-hint { font-size: 11px; color: var(--muted); font-family: var(--mono); text-align: center; margin-top: 2.5rem; }
+.save-hint a { color: var(--accent2); cursor: pointer; text-decoration: underline; }
+body.tv-mode .save-hint { display: none; }
+
+/* ── RESPONSIVE ── */
+@media(max-width:560px){
+  .frow2{grid-template-columns:1fr;}
+  .header{flex-direction:column; align-items:flex-start;}
+  .tabs{width:100%;}
+  .tab{flex:1;justify-content:center;padding:7px 8px;font-size:12px;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="3" width="20" height="14" rx="2" fill="#0b0c0e"/>
+          <path d="M8 21h8M12 17v4" stroke="#0b0c0e" stroke-width="2" stroke-linecap="round"/>
+          <path d="M5 7h14M5 11h9" stroke="#c8f135" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="18" cy="11" r="2.5" fill="#c8f135"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">IPTV Manager</div>
+        <div class="brand-sub">Sparkle TV · Xtream / M3U / EPG</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span class="tv-badge">📺 TV MODE</span>
+      <button class="btn" id="btn-tv-toggle" onclick="toggleTvMode()" title="Attiva/disattiva modalità TV">📺</button>
+      <button class="btn" onclick="openGistSetup()">☁ Sync</button>
+      <button class="btn btn-accent" id="btn-add-main" onclick="openAddModal()">+ Aggiungi</button>
+    </div>
+  </div>
+
+  <!-- REMOTE HINT BAR (visibile solo in TV mode) -->
+  <div class="remote-bar" id="remote-bar">
+    <span>🎮 Telecomando:</span>
+    <span><span class="rkey">▲▼◀▶</span> Naviga</span>
+    <span><span class="rkey">OK</span> Seleziona</span>
+    <span><span class="rkey">⬅ Back</span> Chiudi/Indietro</span>
+    <span><span class="rkey">🔴</span> Copia URL Xtream</span>
+    <span><span class="rkey">🟢</span> Copia M3U</span>
+    <span><span class="rkey">🟡</span> Copia EPG nativo</span>
+    <span><span class="rkey">🔵</span> Refresh scadenza</span>
+  </div>
+
+  <!-- GIST BAR -->
+  <div class="gist-bar" id="gist-bar" style="display:none">
+    <div class="gist-dot" id="gist-dot"></div>
+    <div class="gist-info">
+      <div class="gist-label" id="gist-label">GitHub Gist</div>
+      <div class="gist-sub" id="gist-sub"></div>
+    </div>
+    <div class="gist-btns">
+      <button class="btn btn-sm" onclick="gistPull()">↓ Scarica</button>
+      <button class="btn btn-sm btn-accent" onclick="gistPush(false)">↑ Carica</button>
+      <button class="btn btn-sm btn-danger" onclick="disconnectGist()">✕</button>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" id="tab-xtream" onclick="switchTab('xtream')" tabindex="0">
+      🔑 Xtream <span class="tab-count" id="tc-xtream">0</span>
+    </button>
+    <button class="tab" id="tab-m3u" onclick="switchTab('m3u')" tabindex="0">
+      📋 M3U <span class="tab-count" id="tc-m3u">0</span>
+    </button>
+    <button class="tab" id="tab-epg" onclick="switchTab('epg')" tabindex="0">
+      📡 EPG <span class="tab-count" id="tc-epg">0</span>
+    </button>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content-xtream"></div>
+  <div id="content-m3u" style="display:none"></div>
+  <div id="content-epg" style="display:none"></div>
+
+  <div class="save-hint">
+    Dati incorporati nel file HTML. &nbsp;
+    <a onclick="downloadSelf()">↓ Scarica versione aggiornata</a>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MODAL: XTREAM -->
+<div class="overlay" id="modal-xtream">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" id="mx-title">Nuova lista Xtream</div>
+    <div class="fg"><label class="fl2">Nome</label><input type="text" id="mx-name" placeholder="Es. Lista principale…" /></div>
+    <div class="fg"><label class="fl2">Host / URL server</label><input type="url" id="mx-host" placeholder="http://server.example.com:8080" /></div>
+    <div class="frow2">
+      <div class="fg"><label class="fl2">Username</label><input type="text" id="mx-user" autocomplete="off" placeholder="username" /></div>
+      <div class="fg"><label class="fl2">Password</label><input type="text" id="mx-pass" autocomplete="off" placeholder="password" /></div>
+    </div>
+    <div class="fg">
+      <label class="fl2">EPG Nativo (generato automaticamente)</label>
+      <div id="mx-epg-native-preview" style="font-size:11px;font-family:var(--mono);color:var(--muted2);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px;word-break:break-all;line-height:1.5;">Inserisci host, username e password per vedere l'URL EPG nativo.</div>
+    </div>
+    <div class="fg">
+      <label class="fl2">EPG Esterno aggiuntivo (opzionale)</label>
+      <select id="mx-epg"><option value="">— nessuno —</option></select>
+    </div>
+    <div class="fg"><label class="fl2">Note</label><input type="text" id="mx-notes" placeholder="Note aggiuntive…" /></div>
+    <p class="hint">⚡ Scadenza recuperata automaticamente. EPG nativo via <code>/xmltv.php</code>.</p>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-xtream')">Annulla</button>
+      <button class="btn btn-accent" id="mx-save" onclick="saveXtream()">Salva</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: M3U -->
+<div class="overlay" id="modal-m3u">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" id="mm-title">Nuova playlist M3U</div>
+    <div class="fg"><label class="fl2">Nome</label><input type="text" id="mm-name" placeholder="Es. Playlist Italia…" /></div>
+    <div class="fg"><label class="fl2">URL playlist M3U</label><input type="url" id="mm-url" placeholder="http://server.example.com/list.m3u" /></div>
+    <div class="fg"><label class="fl2">EPG associato (opzionale)</label><select id="mm-epg"><option value="">— nessuno —</option></select></div>
+    <div class="fg"><label class="fl2">Note</label><input type="text" id="mm-notes" placeholder="Note aggiuntive…" /></div>
+    <p class="hint">💡 Incolla l'URL diretto della playlist M3U.</p>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-m3u')">Annulla</button>
+      <button class="btn btn-accent" id="mm-save" onclick="saveM3U()">Salva</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: EPG -->
+<div class="overlay" id="modal-epg">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" id="me-title">Nuova sorgente EPG</div>
+    <div class="fg"><label class="fl2">Nome</label><input type="text" id="me-name" placeholder="Es. EPG Italia…" /></div>
+    <div class="fg"><label class="fl2">URL EPG (xmltv / gz)</label><input type="url" id="me-url" placeholder="http://epg.example.com/guide.xml.gz" /></div>
+    <div class="fg">
+      <label class="fl2">Formato</label>
+      <select id="me-format">
+        <option value="xmltv">XMLTV (.xml)</option>
+        <option value="gz">XMLTV compresso (.gz)</option>
+        <option value="other">Altro</option>
+      </select>
+    </div>
+    <div class="fg"><label class="fl2">Note</label><input type="text" id="me-notes" placeholder="Copertura, frequenza aggiornamento…" /></div>
+    <p class="hint">📡 Incolla l'URL EPG in Sparkle TV › guida TV / EPG.</p>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-epg')">Annulla</button>
+      <button class="btn btn-accent" id="me-save" onclick="saveEPG()">Salva</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: GIST -->
+<div class="overlay" id="modal-gist">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title">☁ Configura Cloud Sync</div>
+    <div class="step"><div class="step-n">1</div><div class="step-b">Vai su <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a>, crea un <strong>Classic token</strong> con scope <code>gist</code> e copialo qui.</div></div>
+    <div class="step"><div class="step-n">2</div><div class="step-b">Alla prima connessione viene creato un <strong>Gist privato</strong>. Prendi nota del Gist ID per altri device.</div></div>
+    <div class="step"><div class="step-n">3</div><div class="step-b">Il token è salvato solo nel browser locale (localStorage).</div></div>
+    <div class="fg"><label class="fl2">GitHub Token (ghp_…)</label><input type="password" id="g-token" placeholder="ghp_xxxxxxxxxxxx" /></div>
+    <div class="fg"><label class="fl2">Gist ID (vuoto = crea nuovo)</label><input type="text" id="g-id" placeholder="ab12cd34ef56…" /></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-gist')">Annulla</button>
+      <button class="btn btn-accent" id="gist-conn-btn" onclick="connectGist()">Connetti</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   EMBEDDED DATA
+══════════════════════════════════════════════════════════ */
+// IPTV_DATA_START
+var SAVED = { xtream: [], m3u: [], epg: [] };
+// IPTV_DATA_END
+
+/* ══════════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════════ */
+var db = { xtream: [], m3u: [], epg: [] };
+var currentTab = 'xtream';
+var editMode = { xtream: null, m3u: null, epg: null };
+var gistToken = '', gistId = '';
+var tvMode = false;
+
+/* ══════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════ */
+function init() {
+  db = JSON.parse(JSON.stringify(SAVED));
+  gistToken = localStorage.getItem('iptv_gh_token') || '';
+  gistId    = localStorage.getItem('iptv_gist_id')  || '';
+  tvMode    = localStorage.getItem('iptv_tv_mode') === '1';
+  if (tvMode) document.body.classList.add('tv-mode');
+  updateGistBar();
+  renderAll();
+  document.querySelectorAll('.overlay').forEach(function(o) {
+    o.addEventListener('click', function(e) { if (e.target === o) o.classList.remove('open'); });
+  });
+}
+
+/* ══════════════════════════════════════════════════════════
+   TV MODE
+══════════════════════════════════════════════════════════ */
+function toggleTvMode() {
+  tvMode = !tvMode;
+  document.body.classList.toggle('tv-mode', tvMode);
+  localStorage.setItem('iptv_tv_mode', tvMode ? '1' : '0');
+  toast(tvMode ? '📺 Modalità TV attivata' : '🖥 Modalità normale');
+  setTimeout(function(){ window.afterRender && window.afterRender(); }, 100);
+}
+
+/* ══════════════════════════════════════════════════════════
+   TABS
+══════════════════════════════════════════════════════════ */
+function switchTab(tab) {
+  currentTab = tab;
+  ['xtream','m3u','epg'].forEach(function(t) {
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('content-'+t).style.display = t===tab ? '' : 'none';
+  });
+  var labels = { xtream:'+ Xtream', m3u:'+ M3U', epg:'+ EPG' };
+  document.getElementById('btn-add-main').textContent = labels[tab];
+  setTimeout(function(){ window.afterRender && window.afterRender(); }, 50);
+}
+
+function openAddModal() {
+  if (currentTab === 'xtream') openXtreamModal();
+  else if (currentTab === 'm3u') openM3UModal();
+  else openEPGModal();
+}
+
+/* ══════════════════════════════════════════════════════════
+   RENDER
+══════════════════════════════════════════════════════════ */
+function renderAll() {
+  renderXtream(); renderM3U(); renderEPG(); updateCounts();
+  setTimeout(function(){ window.afterRender && window.afterRender(); }, 60);
+}
+
+function updateCounts() {
+  document.getElementById('tc-xtream').textContent = db.xtream.length;
+  document.getElementById('tc-m3u').textContent    = db.m3u.length;
+  document.getElementById('tc-epg').textContent    = db.epg.length;
+}
+
+/* ══════════════════════════════════════════════════════════
+   XTREAM
+══════════════════════════════════════════════════════════ */
+function renderXtream() {
+  var c = document.getElementById('content-xtream');
+  if (!db.xtream.length) { c.innerHTML = emptyHtml('🔑','Nessuna lista Xtream','Aggiungi le credenziali host / username / password'); return; }
+  var groups = { ok:[], soon:[], unk:[], exp:[] };
+  db.xtream.forEach(function(l,i){ var s=xStatus(l); (groups[s]||groups.unk).push([l,i]); });
+  var order = [['ok','Attive'],['soon','In scadenza'],['unk','Non verificate'],['exp','Scadute']];
+  var html = '';
+  for (var oi=0; oi<order.length; oi++) {
+    var k=order[oi][0], lbl=order[oi][1];
+    if (!groups[k].length) continue;
+    html += '<div class="section-sep">'+lbl+' ('+groups[k].length+')</div>';
+    for (var gi=0; gi<groups[k].length; gi++) html += xtreamCard(groups[k][gi][0], groups[k][gi][1]);
+  }
+  c.innerHTML = html;
+}
+
+function xStatus(l) {
+  if (!l.expiry) return l.status||'unk';
+  var d = daysUntil(l.expiry);
+  return d<0?'exp':d<=7?'soon':'ok';
+}
+
+function daysUntil(d) { return Math.ceil((new Date(d)-new Date())/86400000); }
+
+function xtreamCard(l, idx) {
+  var st=xStatus(l), days=l.expiry?daysUntil(l.expiry):null;
+  var bm = {
+    ok:  ['b-ok','ATTIVA'],
+    soon:['b-soon', days!==null?'SCADE IN '+days+'GG':'IN SCADENZA'],
+    exp: ['b-exp','SCADUTA'],
+    unk: ['b-unk','N/D']
+  };
+  var bmc = (bm[st]||bm.unk)[0], bml = (bm[st]||bm.unk)[1];
+  var epgName = l.epg ? ((db.epg.filter(function(e){return e.id===l.epg;})[0])||{}).name||'' : '';
+  var nativeEpg = (l.host||'').replace(/\/$/,'') + '/xmltv.php?username=' + encodeURIComponent(l.user||'') + '&password=' + encodeURIComponent(l.pass||'');
+  return '<div class="card" id="xcard-'+idx+'">'
+    +'<div class="card-top">'
+    +'<div class="card-name">'+esc(l.name)+' <span class="badge '+bmc+'">'+bml+'</span></div>'
+    +(l.expiry?'<div class="card-meta">📅 '+l.expiry+'</div>':'')
+    +'</div>'
+    +'<div class="fields">'
+    +'<span class="fl">host</span><span class="fv fv-url">'+esc(l.host)+'</span>'
+    +'<span class="fl">user</span><span class="fv">'+esc(l.user)+'</span>'
+    +'<span class="fl">pass</span><span class="fv">'+esc(l.pass)+'</span>'
+    +'<span class="fl">epg nat.</span><span class="fv fv-url">'+esc(nativeEpg)+'</span>'
+    +(epgName?'<span class="fl">epg ext.</span><span class="fv"><span class="badge b-epg">📡 '+esc(epgName)+'</span></span>':'')
+    +'</div>'
+    +(l.notes?'<div class="note-line">💬 '+esc(l.notes)+'</div>':'')
+    +'<div class="card-actions">'
+    +'<button class="btn btn-xs" onclick="cpXtream('+idx+')">⎘ Xtream</button>'
+    +'<button class="btn btn-xs" onclick="cpM3Ux('+idx+')">⎘ M3U</button>'
+    +'<button class="btn btn-xs" onclick="cpCreds('+idx+')">⎘ Cred.</button>'
+    +'<button class="btn btn-xs" onclick="cpNativeEpg('+idx+')" title="Copia EPG nativo">⎘ EPG</button>'
+    +(epgName?'<button class="btn btn-xs" onclick="cpEpgFromX('+idx+')">⎘ EPG ext.</button>':'')
+    +'<button class="btn btn-xs btn-icon" id="xrefbtn-'+idx+'" onclick="refreshX('+idx+')" title="Ricarica scadenza">🔄</button>'
+    +'<button class="btn btn-xs btn-icon" onclick="openXtreamModal('+idx+')" title="Modifica">✏️</button>'
+    +'<button class="btn btn-xs btn-icon btn-danger" onclick="delXtream('+idx+')">🗑</button>'
+    +'</div></div>';
+}
+
+function openXtreamModal(idx) {
+  editMode.xtream = idx!==undefined ? idx : null;
+  var l = editMode.xtream!==null ? db.xtream[editMode.xtream] : {};
+  document.getElementById('mx-title').textContent = editMode.xtream!==null?'Modifica lista Xtream':'Nuova lista Xtream';
+  document.getElementById('mx-name').value  = l.name||'';
+  document.getElementById('mx-host').value  = l.host||'';
+  document.getElementById('mx-user').value  = l.user||'';
+  document.getElementById('mx-pass').value  = l.pass||'';
+  document.getElementById('mx-notes').value = l.notes||'';
+  populateEpgSelect('mx-epg', l.epg||'');
+  updateNativeEpgPreview();
+  ['mx-host','mx-user','mx-pass'].forEach(function(id){
+    document.getElementById(id).oninput = updateNativeEpgPreview;
+  });
+  openModal('modal-xtream');
+}
+
+function updateNativeEpgPreview() {
+  var host=(document.getElementById('mx-host').value||'').trim().replace(/\/$/,'');
+  var user=(document.getElementById('mx-user').value||'').trim();
+  var pass=(document.getElementById('mx-pass').value||'').trim();
+  var el=document.getElementById('mx-epg-native-preview');
+  if (!el) return;
+  if (!host||!user||!pass) { el.textContent='Inserisci host, username e password per vedere l\'URL EPG nativo.'; return; }
+  var url=host+'/xmltv.php?username='+encodeURIComponent(user)+'&password='+encodeURIComponent(pass);
+  el.innerHTML='<span style="color:var(--accent2)">'+esc(url)+'</span>';
+}
+
+async function saveXtream() {
+  var g=function(id){return document.getElementById(id).value.trim();};
+  var name=g('mx-name'),host=g('mx-host'),user=g('mx-user'),pass=g('mx-pass');
+  if (!name||!host||!user||!pass) { alert('Compila nome, host, username e password.'); return; }
+  var btn=document.getElementById('mx-save');
+  btn.innerHTML='<span class="spin"></span> Recupero…'; btn.disabled=true;
+  var expiry=await fetchExpiry(host,user,pass);
+  var entry={id:editMode.xtream!==null?db.xtream[editMode.xtream].id:uid(), name,host,user,pass,
+    notes:g('mx-notes'), epg:document.getElementById('mx-epg').value,
+    expiry:expiry||'', status:expiry?'ok':'unk'};
+  if (editMode.xtream!==null) db.xtream[editMode.xtream]=entry; else db.xtream.push(entry);
+  btn.innerHTML='Salva'; btn.disabled=false;
+  closeModal('modal-xtream'); commit(); renderAll();
+  toast(expiry?'✓ Salvata · Scadenza: '+expiry:'✓ Salvata (scadenza non disponibile)');
+}
+
+function delXtream(idx) {
+  if (!confirm('Eliminare questa lista Xtream?')) return;
+  db.xtream.splice(idx,1); commit(); renderAll();
+}
+
+async function refreshX(idx) {
+  var l=db.xtream[idx];
+  var btn=document.getElementById('xrefbtn-'+idx);
+  btn.innerHTML='<span class="spin"></span>'; btn.disabled=true;
+  var expiry=await fetchExpiry(l.host,l.user,l.pass);
+  btn.innerHTML='🔄'; btn.disabled=false;
+  if (expiry) { db.xtream[idx].expiry=expiry; commit(); renderAll(); toast('✓ Scadenza: '+expiry); }
+  else toast('⚠ Server non raggiungibile o CORS bloccato');
+}
+
+function cpXtream(i){ var l=db.xtream[i]; cp(l.host+'/get.php?username='+l.user+'&password='+l.pass+'&type=m3u_plus&output=ts'); }
+function cpM3Ux(i){ var l=db.xtream[i]; cp(l.host+'/get.php?username='+l.user+'&password='+l.pass+'&type=m3u_plus'); }
+function cpCreds(i){ var l=db.xtream[i]; cp('Host: '+l.host+'\nUsername: '+l.user+'\nPassword: '+l.pass); }
+function cpNativeEpg(i){ var l=db.xtream[i]; cp(l.host.replace(/\/$/,'')+'/xmltv.php?username='+encodeURIComponent(l.user)+'&password='+encodeURIComponent(l.pass)); }
+function cpEpgFromX(i){
+  var l=db.xtream[i];
+  var epg=db.epg.filter(function(e){return e.id===l.epg;})[0];
+  if (epg) cp(epg.url); else toast('⚠ EPG non trovato');
+}
+
+/* ══════════════════════════════════════════════════════════
+   M3U
+══════════════════════════════════════════════════════════ */
+function renderM3U() {
+  var c=document.getElementById('content-m3u');
+  if (!db.m3u.length) { c.innerHTML=emptyHtml('📋','Nessuna playlist M3U','Aggiungi un link diretto M3U'); return; }
+  c.innerHTML=db.m3u.map(function(l,i){return m3uCard(l,i);}).join('');
+}
+
+function m3uCard(l,idx) {
+  var epgObj=l.epg?db.epg.filter(function(e){return e.id===l.epg;})[0]:null;
+  return '<div class="card">'
+    +'<div class="card-top"><div class="card-name">'+esc(l.name)+' <span class="badge b-m3u">M3U</span></div></div>'
+    +'<div class="fields"><span class="fl">url</span><span class="fv fv-url">'+esc(l.url)+'</span>'
+    +(epgObj?'<span class="fl">epg</span><span class="fv"><span class="badge b-epg">📡 '+esc(epgObj.name)+'</span></span>':'')
+    +'</div>'
+    +(l.notes?'<div class="note-line">💬 '+esc(l.notes)+'</div>':'')
+    +'<div class="card-actions">'
+    +'<button class="btn btn-xs" onclick="cpM3UUrl('+idx+')">⎘ URL M3U</button>'
+    +(epgObj?'<button class="btn btn-xs" onclick="cpEpgFromM3U('+idx+')">⎘ EPG URL</button>':'')
+    +'<button class="btn btn-xs btn-icon" onclick="openM3UModal('+idx+')" title="Modifica">✏️</button>'
+    +'<button class="btn btn-xs btn-icon btn-danger" onclick="delM3U('+idx+')">🗑</button>'
+    +'</div></div>';
+}
+
+function openM3UModal(idx) {
+  editMode.m3u = idx!==undefined?idx:null;
+  var l=editMode.m3u!==null?db.m3u[editMode.m3u]:{};
+  document.getElementById('mm-title').textContent=editMode.m3u!==null?'Modifica playlist M3U':'Nuova playlist M3U';
+  document.getElementById('mm-name').value=l.name||'';
+  document.getElementById('mm-url').value=l.url||'';
+  document.getElementById('mm-notes').value=l.notes||'';
+  populateEpgSelect('mm-epg',l.epg||'');
+  openModal('modal-m3u');
+}
+
+function saveM3U() {
+  var g=function(id){return document.getElementById(id).value.trim();};
+  var name=g('mm-name'),url=g('mm-url');
+  if (!name||!url) { alert('Compila nome e URL.'); return; }
+  var entry={id:editMode.m3u!==null?db.m3u[editMode.m3u].id:uid(), name,url, notes:g('mm-notes'), epg:document.getElementById('mm-epg').value};
+  if (editMode.m3u!==null) db.m3u[editMode.m3u]=entry; else db.m3u.push(entry);
+  closeModal('modal-m3u'); commit(); renderAll(); toast('✓ Playlist M3U salvata');
+}
+
+function delM3U(idx) {
+  if (!confirm('Eliminare questa playlist?')) return;
+  db.m3u.splice(idx,1); commit(); renderAll();
+}
+
+function cpM3UUrl(i){ cp(db.m3u[i].url); }
+function cpEpgFromM3U(i){
+  var l=db.m3u[i];
+  var epg=db.epg.filter(function(e){return e.id===l.epg;})[0];
+  if (epg) cp(epg.url); else toast('⚠ EPG non trovato');
+}
+
+/* ══════════════════════════════════════════════════════════
+   EPG
+══════════════════════════════════════════════════════════ */
+function renderEPG() {
+  var c=document.getElementById('content-epg');
+  if (!db.epg.length) { c.innerHTML=emptyHtml('📡','Nessuna sorgente EPG','Aggiungi un URL xmltv per la guida TV'); return; }
+  var html='<div class="section-head"><div class="section-label">Sorgenti EPG ('+db.epg.length+')</div></div>';
+  html+=db.epg.map(function(e,i){return epgCard(e,i);}).join('');
+  c.innerHTML=html;
+}
+
+function epgCard(e,idx) {
+  var fmt={xmltv:'XMLTV',gz:'XMLTV.GZ',other:'EPG'};
+  var usedBy=db.xtream.filter(function(x){return x.epg===e.id;}).map(function(x){return x.name;})
+    .concat(db.m3u.filter(function(m){return m.epg===e.id;}).map(function(m){return m.name;}));
+  return '<div class="epg-card">'
+    +'<div class="epg-top"><div class="epg-name">'+esc(e.name)+' <span class="badge b-epg">'+(fmt[e.format]||'EPG')+'</span></div>'
+    +(usedBy.length?'<div class="card-meta">usato da '+usedBy.length+' lista/e</div>':'')
+    +'</div>'
+    +'<div class="epg-url">'+esc(e.url)+'</div>'
+    +(e.notes?'<div class="note-line" style="margin-bottom:10px">💬 '+esc(e.notes)+'</div>':'')
+    +'<div class="epg-actions">'
+    +'<button class="btn btn-xs" onclick="cpEpg('+idx+')">⎘ Copia URL EPG</button>'
+    +'<button class="btn btn-xs btn-icon" onclick="openEPGModal('+idx+')" title="Modifica">✏️</button>'
+    +'<button class="btn btn-xs btn-icon btn-danger" onclick="delEPG('+idx+')">🗑</button>'
+    +'</div></div>';
+}
+
+function openEPGModal(idx) {
+  editMode.epg=idx!==undefined?idx:null;
+  var e=editMode.epg!==null?db.epg[editMode.epg]:{};
+  document.getElementById('me-title').textContent=editMode.epg!==null?'Modifica sorgente EPG':'Nuova sorgente EPG';
+  document.getElementById('me-name').value=e.name||'';
+  document.getElementById('me-url').value=e.url||'';
+  document.getElementById('me-format').value=e.format||'xmltv';
+  document.getElementById('me-notes').value=e.notes||'';
+  openModal('modal-epg');
+}
+
+function saveEPG() {
+  var g=function(id){return document.getElementById(id).value.trim();};
+  var name=g('me-name'),url=g('me-url');
+  if (!name||!url) { alert('Compila nome e URL EPG.'); return; }
+  var entry={id:editMode.epg!==null?db.epg[editMode.epg].id:uid(), name,url, format:document.getElementById('me-format').value, notes:g('me-notes')};
+  if (editMode.epg!==null) db.epg[editMode.epg]=entry; else db.epg.push(entry);
+  closeModal('modal-epg'); commit(); renderAll(); toast('✓ Sorgente EPG salvata');
+}
+
+function delEPG(idx) {
+  var id=db.epg[idx].id;
+  var used=db.xtream.filter(function(x){return x.epg===id;}).concat(db.m3u.filter(function(m){return m.epg===id;}));
+  if (used.length&&!confirm('EPG usata da '+used.length+' lista/e. Continuare?')) return;
+  db.epg.splice(idx,1);
+  db.xtream.forEach(function(x){if(x.epg===id)x.epg='';});
+  db.m3u.forEach(function(m){if(m.epg===id)m.epg='';});
+  commit(); renderAll();
+}
+
+function cpEpg(i){ cp(db.epg[i].url); }
+
+/* ══════════════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════════════ */
+function populateEpgSelect(selId, currentVal) {
+  var sel=document.getElementById(selId);
+  sel.innerHTML='<option value="">— nessuno —</option>';
+  db.epg.forEach(function(e){
+    var opt=document.createElement('option');
+    opt.value=e.id; opt.textContent='📡 '+e.name;
+    if (e.id===currentVal) opt.selected=true;
+    sel.appendChild(opt);
+  });
+}
+
+async function fetchExpiry(host,user,pass) {
+  var url=(host.replace(/\/$/,''))+'/player_api.php?username='+encodeURIComponent(user)+'&password='+encodeURIComponent(pass);
+  try {
+    var res=await fetch(url,{signal:AbortSignal.timeout(8000)});
+    if (!res.ok) return null;
+    var data=await res.json();
+    var ts=data&&data.user_info&&data.user_info.exp_date;
+    if (!ts) return null;
+    var d=new Date(parseInt(ts)*1000);
+    return isNaN(d)?null:d.toISOString().split('T')[0];
+  } catch(e){ return null; }
+}
+
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+function emptyHtml(icon,title,sub){
+  return '<div class="empty"><div class="empty-icon">'+icon+'</div><p>'+title+'</p><small>'+sub+'</small></div>';
+}
+
+function uid(){ return Math.random().toString(36).substring(2,10); }
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function cp(txt){
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(function(){toast('✓ Copiato!');}).catch(function(){ cpFallback(txt); });
+  } else { cpFallback(txt); }
+}
+function cpFallback(txt){
+  var ta=document.createElement('textarea');
+  ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try{ document.execCommand('copy'); toast('✓ Copiato!'); } catch(e){ toast('⚠ Copia manuale richiesta'); }
+  document.body.removeChild(ta);
+}
+
+var _tt;
+function toast(msg){
+  var el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(_tt); _tt=setTimeout(function(){el.classList.remove('show');},2800);
+}
+
+/* ══════════════════════════════════════════════════════════
+   SELF-SAVE
+══════════════════════════════════════════════════════════ */
+function getUpdatedHtml(){
+  var json=JSON.stringify(db,null,2);
+  return document.documentElement.outerHTML.replace(
+    /\/\/ IPTV_DATA_START[\s\S]*?\/\/ IPTV_DATA_END/,
+    '// IPTV_DATA_START\nvar SAVED = '+json+';\n// IPTV_DATA_END'
+  );
+}
+
+function commit(){
+  SAVED=JSON.parse(JSON.stringify(db));
+  if (gistToken&&gistId) gistPush(true);
+}
+
+function downloadSelf(){
+  var blob=new Blob([getUpdatedHtml()],{type:'text/html'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='iptv-manager.html'; a.click();
+  toast('✓ File scaricato');
+}
+
+/* ══════════════════════════════════════════════════════════
+   GITHUB GIST
+══════════════════════════════════════════════════════════ */
+var GIST_FILENAME = 'iptv-data.json';
+
+function openGistSetup(){
+  document.getElementById('g-token').value=gistToken;
+  document.getElementById('g-id').value=gistId;
+  openModal('modal-gist');
+}
+
+async function connectGist(){
+  var token=document.getElementById('g-token').value.trim();
+  var id=document.getElementById('g-id').value.trim();
+  if (!token) { alert('Inserisci il token GitHub.'); return; }
+  var btn=document.getElementById('gist-conn-btn');
+  btn.innerHTML='<span class="spin"></span> Connessione…'; btn.disabled=true;
+  try {
+    var hdrs={Authorization:'Bearer '+token,'X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'};
+    if (id) {
+      var r=await fetch('https://api.github.com/gists/'+id,{headers:hdrs});
+      if (!r.ok) throw new Error('Gist non trovato ('+r.status+'). Controlla ID e scope "gist" del token.');
+      var gdata=await r.json();
+      var files=Object.keys(gdata.files);
+      var jsonFile=files.filter(function(f){return f.endsWith('.json');})[0];
+      if (!jsonFile) throw new Error('Gist trovato ma senza file .json. File presenti: '+(files.join(', ')||'nessuno'));
+      gistToken=token; gistId=id;
+      localStorage.setItem('iptv_gh_token',gistToken); localStorage.setItem('iptv_gist_id',gistId);
+      closeModal('modal-gist'); btn.innerHTML='Connetti'; btn.disabled=false; updateGistBar();
+      await gistPull();
+    } else {
+      var rc=await fetch('https://api.github.com/gists',{method:'POST',headers:hdrs,
+        body:JSON.stringify({description:'IPTV Manager — Sparkle TV',public:false,
+          files:{[GIST_FILENAME]:{content:JSON.stringify(db,null,2)}}})});
+      if (!rc.ok) throw new Error('Errore creazione Gist: '+rc.status);
+      var dcr=await rc.json();
+      gistToken=token; gistId=dcr.id;
+      localStorage.setItem('iptv_gh_token',gistToken); localStorage.setItem('iptv_gist_id',gistId);
+      closeModal('modal-gist'); updateGistBar(); btn.innerHTML='Connetti'; btn.disabled=false;
+      setGistStatus('ok','Nuovo Gist creato'); toast('✓ Gist creato! ID: '+gistId);
+    }
+  } catch(e){ btn.innerHTML='Connetti'; btn.disabled=false; alert('Errore: '+e.message); }
+}
+
+function disconnectGist(){
+  if (!confirm('Disconnettere Cloud Sync?')) return;
+  gistToken=''; gistId='';
+  localStorage.removeItem('iptv_gh_token'); localStorage.removeItem('iptv_gist_id');
+  updateGistBar(); toast('Cloud Sync disconnesso');
+}
+
+async function gistPush(silent){
+  if (!gistToken||!gistId) return;
+  setGistStatus('syncing','Caricamento…');
+  try {
+    var rg=await fetch('https://api.github.com/gists/'+gistId,{headers:{Authorization:'Bearer '+gistToken,'X-GitHub-Api-Version':'2022-11-28'}});
+    if (!rg.ok) throw new Error('Gist non accessibile: '+rg.status);
+    var gd=await rg.json();
+    var ef=Object.keys(gd.files).filter(function(f){return f.endsWith('.json');})[0]||GIST_FILENAME;
+    var fp={}; fp[ef]={content:JSON.stringify(db,null,2)};
+    var rp=await fetch('https://api.github.com/gists/'+gistId,{method:'PATCH',
+      headers:{Authorization:'Bearer '+gistToken,'Content-Type':'application/json','X-GitHub-Api-Version':'2022-11-28'},
+      body:JSON.stringify({files:fp})});
+    if (!rp.ok) throw new Error('Push fallito: '+rp.status);
+    setGistStatus('ok','Sincronizzato · '+new Date().toLocaleTimeString('it-IT'));
+    if (!silent) toast('✓ Caricato su Gist');
+  } catch(e){ setGistStatus('err','Errore'); if (!silent) toast('⚠ Push: '+e.message); }
+}
+
+async function gistPull(){
+  if (!gistToken||!gistId) return;
+  setGistStatus('syncing','Scaricamento…');
+  try {
+    var r=await fetch('https://api.github.com/gists/'+gistId,{headers:{Authorization:'Bearer '+gistToken,'X-GitHub-Api-Version':'2022-11-28'}});
+    if (!r.ok) throw new Error('Gist non accessibile: '+r.status);
+    var data=await r.json();
+    var fe=Object.values(data.files).filter(function(f){return f.filename.endsWith('.json');})[0];
+    if (!fe) throw new Error('Nessun file JSON nel Gist');
+    var content=fe.content;
+    if (fe.truncated){
+      var rr=await fetch(fe.raw_url,{headers:{Authorization:'Bearer '+gistToken}});
+      if (!rr.ok) throw new Error('Errore raw: '+rr.status);
+      content=await rr.text();
+    }
+    if (!content||!content.trim()) throw new Error('File vuoto nel Gist');
+    var parsed=JSON.parse(content);
+    if (parsed.xtream!==undefined||parsed.m3u!==undefined||parsed.epg!==undefined){
+      db=Object.assign({xtream:[],m3u:[],epg:[]},parsed);
+    } else if (Array.isArray(parsed.lists)){
+      db={xtream:parsed.lists,m3u:[],epg:[]};
+      toast('⚠ Formato vecchio convertito. Premi ↑ Carica per aggiornare il Gist.');
+    } else if (Array.isArray(parsed)){
+      db={xtream:parsed,m3u:[],epg:[]};
+      toast('⚠ Formato vecchio convertito.');
+    } else {
+      throw new Error('Formato non riconosciuto. Chiavi: '+Object.keys(parsed).join(', '));
+    }
+    SAVED=JSON.parse(JSON.stringify(db));
+    setGistStatus('ok','Aggiornato · '+new Date().toLocaleTimeString('it-IT'));
+    renderAll(); toast('✓ Sync: '+db.xtream.length+' Xtream, '+db.m3u.length+' M3U, '+db.epg.length+' EPG');
+  } catch(e){ setGistStatus('err','Errore'); toast('⚠ Pull: '+e.message); }
+}
+
+function setGistStatus(state,sub){
+  var dot=document.getElementById('gist-dot');
+  dot.className='gist-dot'+(state==='ok'?' ok':state==='syncing'?' syncing':'');
+  document.getElementById('gist-sub').textContent=sub||gistId;
+}
+
+function updateGistBar(){
+  var bar=document.getElementById('gist-bar');
+  if (gistToken&&gistId){
+    bar.style.display='flex';
+    document.getElementById('gist-label').textContent='GitHub Gist — Cloud Sync attivo';
+    setGistStatus('ok','ID: '+gistId.substring(0,18)+'…');
+  } else { bar.style.display='none'; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   FIRE TV / TV REMOTE — D-pad + OK + tasti colore
+══════════════════════════════════════════════════════════ */
+(function(){
+  var SEL = 'button:not([disabled]),input:not([disabled]),select:not([disabled]),.tab';
+  var cur = null;
+
+  function els(){
+    return [].slice.call(document.querySelectorAll(SEL)).filter(function(el){
+      if (!el.offsetParent && el.offsetWidth===0) return false;
+      var ov = el.closest ? el.closest('.overlay') : null;
+      if (ov && !ov.classList.contains('open')) return false;
+      return true;
+    });
+  }
+
+  function cx(el){ var r=el.getBoundingClientRect(); return r.left+r.width/2; }
+  function cy(el){ var r=el.getBoundingClientRect(); return r.top+r.height/2; }
+
+  function nearest(from, dir){
+    var fx=cx(from), fy=cy(from);
+    var best=null, bestScore=9999999;
+    els().forEach(function(el){
+      if (el===from) return;
+      var ex=cx(el), ey=cy(el), dx=ex-fx, dy=ey-fy;
+      var ok=false;
+      if (dir==='up'    && dy<-8) ok=true;
+      if (dir==='down'  && dy> 8) ok=true;
+      if (dir==='left'  && dx<-8) ok=true;
+      if (dir==='right' && dx> 8) ok=true;
+      if (!ok) return;
+      var cross=(dir==='up'||dir==='down')?Math.abs(dx)*2.5:Math.abs(dy)*2.5;
+      var score=Math.sqrt(dx*dx+dy*dy)+cross;
+      if (score<bestScore){ bestScore=score; best=el; }
+    });
+    return best;
+  }
+
+  function setFocus(el){
+    if (!el) return;
+    if (cur) cur.classList.remove('tv-focus');
+    cur=el;
+    el.classList.add('tv-focus');
+    try{ el.focus({preventScroll:true}); } catch(e){ el.focus(); }
+    el.scrollIntoView({block:'nearest',behavior:'smooth'});
+  }
+
+  function initFocus(){
+    var list=els();
+    if (list.length) setFocus(list[0]);
+  }
+
+  /* Tasti colore Fire TV — trovare la card focalizzata e agire su di essa */
+  function colorAction(color){
+    /* Trova la card più vicina al focus corrente */
+    if (!cur) return;
+    var card=cur.closest ? cur.closest('.card, .epg-card') : null;
+    if (!card) return;
+    /* Trova l'indice dalla card id */
+    var id=card.id; /* "xcard-N" */
+    var match=id && id.match(/xcard-(\d+)/);
+    if (!match) return;
+    var idx=parseInt(match[1]);
+    if (color==='red')    cpXtream(idx);
+    if (color==='green')  cpM3Ux(idx);
+    if (color==='yellow') cpNativeEpg(idx);
+    if (color==='blue')   refreshX(idx);
+  }
+
+  function handleKey(e, phase){
+    var k=e.keyCode||e.which||0;
+    if (!cur||!document.contains(cur)){ initFocus(); return; }
+    var tag=(document.activeElement||{}).tagName||'';
+    var inText=(tag==='INPUT'||tag==='TEXTAREA');
+    var inSel=(tag==='SELECT');
+
+    /* OK / Enter */
+    if (k===13||k===85||k===179){
+      if (phase==='keydown'){ e.preventDefault(); e.stopPropagation(); }
+      if (phase==='keyup'){ e.preventDefault(); e.stopPropagation(); cur.click(); }
+      return;
+    }
+    /* Back */
+    if ((k===8||k===27)&&phase==='keydown'){
+      var open=document.querySelector('.overlay.open');
+      if (open){ e.preventDefault(); open.classList.remove('open'); setTimeout(initFocus,80); }
+      return;
+    }
+    /* Tasti colore Fire TV */
+    /* Rosso=403, Verde=404, Giallo=405, Blu=406 */
+    if (phase==='keydown'){
+      if (k===403){ e.preventDefault(); colorAction('red');    return; }
+      if (k===404){ e.preventDefault(); colorAction('green');  return; }
+      if (k===405){ e.preventDefault(); colorAction('yellow'); return; }
+      if (k===406){ e.preventDefault(); colorAction('blue');   return; }
+    }
+    if (phase!=='keydown') return;
+
+    var dir=null;
+    if (k===38) dir='up';
+    if (k===40) dir='down';
+    if (k===37) dir='left';
+    if (k===39) dir='right';
+    if (!dir) return;
+    if (inText&&(dir==='left'||dir==='right')) return;
+    if (inSel&&(dir==='up'||dir==='down')) return;
+    e.preventDefault(); e.stopPropagation();
+    var next=nearest(cur,dir);
+    if (next) setFocus(next);
+  }
+
+  document.addEventListener('keydown', function(e){ handleKey(e,'keydown'); }, true);
+  document.addEventListener('keyup',   function(e){ handleKey(e,'keyup');   }, true);
+
+  document.addEventListener('focusin', function(e){
+    var el=e.target;
+    if (el&&el.matches&&el.matches(SEL)){
+      if (cur&&cur!==el) cur.classList.remove('tv-focus');
+      cur=el; el.classList.add('tv-focus');
+    }
+  }, true);
+
+  window.afterRender = function(){
+    var list=els();
+    if (cur&&document.contains(cur)){ cur.classList.add('tv-focus'); }
+    else if (list.length){ setFocus(list[0]); }
+  };
+
+  window.addEventListener('load', function(){ setTimeout(initFocus,250); });
+})();
+
+init();
+window.afterRender && window.afterRender();
+</script>
+</body>
+</html>
 
