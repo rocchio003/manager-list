@@ -971,6 +971,8 @@ function updateGistBar(){
     }
     /* Back */
     if ((k===8||k===27)&&phase==='keydown'){
+      // Se il focus è su un input/textarea, lascia il comportamento normale (cancella testo)
+      if (inText) return;
       var open=document.querySelector('.overlay.open');
       if (open){ e.preventDefault(); open.classList.remove('open'); setTimeout(initFocus,80); }
       return;
