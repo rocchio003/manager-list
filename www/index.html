@@ -308,8 +308,11 @@ body.tv-mode .save-hint { display: none; }
       <label class="fl2">EPG Esterno aggiuntivo (opzionale)</label>
       <select id="mx-epg"><option value="">— nessuno —</option></select>
     </div>
-    <div class="fg"><label class="fl2">Note</label><input type="text" id="mx-notes" placeholder="Note aggiuntive…" /></div>
-    <p class="hint">⚡ Scadenza recuperata automaticamente. EPG nativo via <code>/xmltv.php</code>.</p>
+    <div class="frow2">
+      <div class="fg"><label class="fl2">Note</label><input type="text" id="mx-notes" placeholder="Note aggiuntive…" /></div>
+      <div class="fg"><label class="fl2">Scadenza (opzionale)</label><input type="text" id="mx-expiry" placeholder="AAAA-MM-GG" /></div>
+    </div>
+    <p class="hint">⚡ Se il server risponde, la scadenza viene letta automaticamente. Altrimenti inseriscila manualmente nel formato AAAA-MM-GG.</p>
     <div class="modal-footer">
       <button class="btn" onclick="closeModal('modal-xtream')">Annulla</button>
       <button class="btn btn-accent" id="mx-save" onclick="saveXtream()">Salva</button>
@@ -525,7 +528,8 @@ function openXtreamModal(idx) {
   document.getElementById('mx-host').value  = l.host||'';
   document.getElementById('mx-user').value  = l.user||'';
   document.getElementById('mx-pass').value  = l.pass||'';
-  document.getElementById('mx-notes').value = l.notes||'';
+  document.getElementById('mx-notes').value  = l.notes||'';
+  document.getElementById('mx-expiry').value = l.expiry||'';
   populateEpgSelect('mx-epg', l.epg||'');
   updateNativeEpgPreview();
   ['mx-host','mx-user','mx-pass'].forEach(function(id){
@@ -551,25 +555,27 @@ async function saveXtream() {
   if (!name||!host||!user||!pass) { alert('Compila nome, host, username e password.'); return; }
   var btn=document.getElementById('mx-save');
   btn.innerHTML='<span class="spin"></span> Recupero…'; btn.disabled=true;
+  var manualExpiry = g('mx-expiry');
   var existingExpiry = editMode.xtream!==null ? db.xtream[editMode.xtream].expiry||'' : '';
   var credentialsChanged = editMode.xtream===null ||
     db.xtream[editMode.xtream].host!==host ||
     db.xtream[editMode.xtream].user!==user ||
     db.xtream[editMode.xtream].pass!==pass;
-  var expiry = null;
+  var autoExpiry = null;
   if (credentialsChanged) {
-    expiry = await fetchExpiry(host,user,pass);
+    autoExpiry = await fetchExpiry(host,user,pass);
   } else {
-    expiry = existingExpiry || await fetchExpiry(host,user,pass);
+    autoExpiry = existingExpiry || await fetchExpiry(host,user,pass);
   }
-  var finalExpiry = expiry || existingExpiry;
+  // Priorità: auto > manuale > esistente
+  var finalExpiry = autoExpiry || manualExpiry || existingExpiry;
   var entry={id:editMode.xtream!==null?db.xtream[editMode.xtream].id:uid(), name,host,user,pass,
     notes:g('mx-notes'), epg:document.getElementById('mx-epg').value,
     expiry:finalExpiry, status:finalExpiry?(daysUntil(finalExpiry)<0?'exp':daysUntil(finalExpiry)<=7?'soon':'ok'):'unk'};
   if (editMode.xtream!==null) db.xtream[editMode.xtream]=entry; else db.xtream.push(entry);
   btn.innerHTML='Salva'; btn.disabled=false;
   closeModal('modal-xtream'); commit(); renderAll();
-  toast(finalExpiry?'✓ Salvata · Scadenza: '+finalExpiry:'✓ Salvata (scadenza non disponibile)');
+  toast(finalExpiry?'✓ Salvata · Scadenza: '+finalExpiry:(manualExpiry?'✓ Salvata':'✓ Salvata — inserisci scadenza manualmente'));
 }
 
 function delXtream(idx) {
@@ -731,42 +737,28 @@ function populateEpgSelect(selId, currentVal) {
 async function fetchExpiry(host,user,pass) {
   var apiUrl=(host.replace(/\/$/,''))+'/player_api.php?username='+encodeURIComponent(user)+'&password='+encodeURIComponent(pass);
 
-  // Tentativo 1: fetch diretto
+  // Tentativo 1: fetch diretto (browser desktop/mobile)
   try {
     var res=await fetch(apiUrl,{signal:AbortSignal.timeout(8000)});
     if (res.ok) {
       var data=await res.json();
       var ts=data&&data.user_info&&data.user_info.exp_date;
-      if (ts) {
-        var d=new Date(parseInt(ts)*1000);
-        if (!isNaN(d)) return d.toISOString().split('T')[0];
-      }
+      if (ts){ var d=new Date(parseInt(ts)*1000); if(!isNaN(d)) return d.toISOString().split('T')[0]; }
     }
-  } catch(e){ /* CORS/rete: prova proxy */ }
+  } catch(e){ /* CORS/WebView — prova proxy */ }
 
-  // Tentativo 2: proxy via Claude API (per WebView/APK)
+  // Tentativo 2: proxy via HF Space (aggira CORS su APK/WebView)
   try {
-    var prompt='Fetch this URL and return ONLY the numeric unix timestamp value of user_info.exp_date field, or null if missing. URL: '+apiUrl+'\nReply with only the number or the word null.';
-    var resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:64,
-        tools:[{type:'web_search_20250305',name:'web_search'}],
-        messages:[{role:'user',content:prompt}]
-      })
-    });
-    if (!resp.ok) return null;
-    var json=await resp.json();
-    var text='';
-    if (json.content) for(var i=0;i<json.content.length;i++) if(json.content[i].type==='text') text+=json.content[i].text;
-    text=text.trim();
-    if (!text||text.toLowerCase()==='null') return null;
-    if (/^\d{10,}$/.test(text)){ var dd=new Date(parseInt(text)*1000); return isNaN(dd)?null:dd.toISOString().split('T')[0]; }
-    if (/^\d{4}-\d{2}-\d{2}/.test(text)) return text.substring(0,10);
-    return null;
-  } catch(e){ return null; }
+    var proxyUrl='https://provetta-addon.hf.space/proxy/stream?url='+encodeURIComponent(apiUrl);
+    var res2=await fetch(proxyUrl,{signal:AbortSignal.timeout(12000)});
+    if (res2.ok) {
+      var data2=await res2.json();
+      var ts2=data2&&data2.user_info&&data2.user_info.exp_date;
+      if (ts2){ var d2=new Date(parseInt(ts2)*1000); if(!isNaN(d2)) return d2.toISOString().split('T')[0]; }
+    }
+  } catch(e2){ /* proxy fallito */ }
+
+  return null;
 }
 
 function openModal(id){ document.getElementById(id).classList.add('open'); }
