@@ -551,14 +551,25 @@ async function saveXtream() {
   if (!name||!host||!user||!pass) { alert('Compila nome, host, username e password.'); return; }
   var btn=document.getElementById('mx-save');
   btn.innerHTML='<span class="spin"></span> Recupero…'; btn.disabled=true;
-  var expiry=await fetchExpiry(host,user,pass);
+  var existingExpiry = editMode.xtream!==null ? db.xtream[editMode.xtream].expiry||'' : '';
+  var credentialsChanged = editMode.xtream===null ||
+    db.xtream[editMode.xtream].host!==host ||
+    db.xtream[editMode.xtream].user!==user ||
+    db.xtream[editMode.xtream].pass!==pass;
+  var expiry = null;
+  if (credentialsChanged) {
+    expiry = await fetchExpiry(host,user,pass);
+  } else {
+    expiry = existingExpiry || await fetchExpiry(host,user,pass);
+  }
+  var finalExpiry = expiry || existingExpiry;
   var entry={id:editMode.xtream!==null?db.xtream[editMode.xtream].id:uid(), name,host,user,pass,
     notes:g('mx-notes'), epg:document.getElementById('mx-epg').value,
-    expiry:expiry||'', status:expiry?'ok':'unk'};
+    expiry:finalExpiry, status:finalExpiry?(daysUntil(finalExpiry)<0?'exp':daysUntil(finalExpiry)<=7?'soon':'ok'):'unk'};
   if (editMode.xtream!==null) db.xtream[editMode.xtream]=entry; else db.xtream.push(entry);
   btn.innerHTML='Salva'; btn.disabled=false;
   closeModal('modal-xtream'); commit(); renderAll();
-  toast(expiry?'✓ Salvata · Scadenza: '+expiry:'✓ Salvata (scadenza non disponibile)');
+  toast(finalExpiry?'✓ Salvata · Scadenza: '+finalExpiry:'✓ Salvata (scadenza non disponibile)');
 }
 
 function delXtream(idx) {
