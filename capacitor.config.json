@@ -1,0 +1,6 @@
+{
+  "appId": "com.tuonome.iptvmanager",
+  "appName": "IPTV Manager",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
