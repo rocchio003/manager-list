@@ -1310,12 +1310,12 @@ async function gistPull(silent){
     if (!content||!content.trim()) throw new Error('File vuoto nel Gist');
     var parsed=JSON.parse(content);
     if (parsed.xtream!==undefined||parsed.m3u!==undefined||parsed.epg!==undefined){
-      db=Object.assign({xtream:[],m3u:[],epg:[]},parsed);
+      db=Object.assign({xtream:[],m3u:[],epg:[],notes:[],backups:[]},parsed);
     } else if (Array.isArray(parsed.lists)){
-      db={xtream:parsed.lists,m3u:[],epg:[]};
+      db={xtream:parsed.lists,m3u:[],epg:[],notes:[],backups:[]};
       toast('⚠ Formato vecchio convertito. Premi ↑ Carica per aggiornare il Gist.');
     } else if (Array.isArray(parsed)){
-      db={xtream:parsed,m3u:[],epg:[]};
+      db={xtream:parsed,m3u:[],epg:[],notes:[],backups:[]};
       toast('⚠ Formato vecchio convertito.');
     } else {
       throw new Error('Formato non riconosciuto. Chiavi: '+Object.keys(parsed).join(', '));
