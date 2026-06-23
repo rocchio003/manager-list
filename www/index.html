@@ -1118,14 +1118,24 @@ function downloadBackup(idx) {
   if (!b.data) { toast('⚠ Dati backup non trovati'); return; }
   try {
     var parts=b.data.split(',');
-    var mime=parts[0].match(/:(.*?);/)[1];
+    var mime=(parts[0].match(/:(.*?);/)||[])[1]||'application/octet-stream';
     var raw=atob(parts[1]);
     var u8=new Uint8Array(raw.length);
     for (var i=0;i<raw.length;i++) u8[i]=raw.charCodeAt(i);
-    var blob=new Blob([u8],{type:mime||'application/octet-stream'});
+    var blob=new Blob([u8],{type:mime});
+    // Prova navigator.share (mobile - salva/scarica file)
+    if (typeof navigator.share==='function'&&typeof navigator.canShare==='function') {
+      var file=new File([blob], b.fileName||'backup',{type:mime});
+      if (navigator.canShare({files:[file]})) {
+        navigator.share({files:[file]}).then(function(){toast('✓ Backup salvato');}).catch(function(e){});
+        return;
+      }
+    }
+    // Fallback: blob URL + anchor click (desktop)
     var url=URL.createObjectURL(blob);
     var a=document.createElement('a');
     a.href=url; a.download=b.fileName||'backup';
+    a.target='_blank';
     document.body.appendChild(a);
     a.click();
     setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
