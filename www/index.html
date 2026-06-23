@@ -713,11 +713,15 @@ function renderAll() {
 }
 
 function updateCounts() {
-  document.getElementById('tc-xtream').textContent = db.xtream.length;
-  document.getElementById('tc-m3u').textContent    = db.m3u.length;
-  document.getElementById('tc-epg').textContent    = db.epg.length;
-  document.getElementById('tc-notes').textContent  = db.notes.length;
-  document.getElementById('tc-backups').textContent = db.backups.length;
+  try {
+    document.getElementById('tc-xtream').textContent = db.xtream.length;
+    document.getElementById('tc-m3u').textContent    = db.m3u.length;
+    document.getElementById('tc-epg').textContent    = db.epg.length;
+    var elNotes=document.getElementById('tc-notes');
+    var elBackups=document.getElementById('tc-backups');
+    if (elNotes) elNotes.textContent=db.notes.length;
+    if (elBackups) elBackups.textContent=db.backups.length;
+  } catch(e) { console.log('updateCounts error:', e); }
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1007,11 +1011,14 @@ function cpEpg(i){ cp(db.epg[i].url); }
    NOTES (Appunti)
 ══════════════════════════════════════════════════════════ */
 function renderNotes() {
-  var c=document.getElementById('content-notes');
-  if (!db.notes.length) { c.innerHTML=emptyHtml('📝','Nessun appunto','Aggiungi note, link o testo da ricordare'); return; }
-  var html='<div class="section-head"><div class="section-label">Appunti ('+db.notes.length+')</div></div>';
-  html+=db.notes.map(function(n,i){return noteCard(n,i);}).join('');
-  c.innerHTML=html;
+  try {
+    var c=document.getElementById('content-notes');
+    if (!c) return;
+    if (!db.notes.length) { c.innerHTML=emptyHtml('📝','Nessun appunto','Aggiungi note, link o testo da ricordare'); return; }
+    var html='<div class="section-head"><div class="section-label">Appunti ('+db.notes.length+')</div></div>';
+    html+=db.notes.map(function(n,i){return noteCard(n,i);}).join('');
+    c.innerHTML=html;
+  } catch(e) { console.log('renderNotes error:', e); }
 }
 function noteCard(n,idx) {
   return '<div class="card">'
@@ -1032,12 +1039,14 @@ function openNoteModal(idx) {
   openModal('modal-note');
 }
 function saveNote() {
-  var g=function(id){return document.getElementById(id).value.trim();};
-  var name=g('mn-name'),text=g('mn-text');
-  if (!name) { alert('Inserisci un titolo per l\'appunto.'); return; }
-  var entry={id:editMode.notes!==null?db.notes[editMode.notes].id:uid(), name, text};
-  if (editMode.notes!==null) db.notes[editMode.notes]=entry; else db.notes.push(entry);
-  closeModal('modal-note'); commit(); renderAll(); toast('✓ Appunto salvato');
+  try {
+    var name=document.getElementById('mn-name').value.trim();
+    var text=document.getElementById('mn-text').value.trim();
+    if (!name) { alert('Inserisci un titolo per l\'appunto.'); return; }
+    var entry={id:editMode.notes!==null?db.notes[editMode.notes].id:uid(), name, text};
+    if (editMode.notes!==null) db.notes[editMode.notes]=entry; else db.notes.push(entry);
+    closeModal('modal-note'); commit(); renderAll(); toast('✓ Appunto salvato');
+  } catch(e) { alert('Errore: '+e.message); }
 }
 function delNote(idx) {
   if (!confirm('Eliminare questo appunto?')) return;
@@ -1049,11 +1058,14 @@ function cpNote(i){ cp(db.notes[i].text); }
    BACKUPS
 ══════════════════════════════════════════════════════════ */
 function renderBackups() {
-  var c=document.getElementById('content-backups');
-  if (!db.backups.length) { c.innerHTML=emptyHtml('💾','Nessun backup','Carica backup di Sparkle TV, Tivimate, ecc.'); return; }
-  var html='<div class="section-head"><div class="section-label">Backup ('+db.backups.length+')</div></div>';
-  html+=db.backups.map(function(b,i){return backupCard(b,i);}).join('');
-  c.innerHTML=html;
+  try {
+    var c=document.getElementById('content-backups');
+    if (!c) return;
+    if (!db.backups.length) { c.innerHTML=emptyHtml('💾','Nessun backup','Carica backup di Sparkle TV, Tivimate, ecc.'); return; }
+    var html='<div class="section-head"><div class="section-label">Backup ('+db.backups.length+')</div></div>';
+    html+=db.backups.map(function(b,i){return backupCard(b,i);}).join('');
+    c.innerHTML=html;
+  } catch(e) { console.log('renderBackups error:', e); }
 }
 function backupCard(b,idx) {
   var sz=b.size?formatBytes(b.size):'';
