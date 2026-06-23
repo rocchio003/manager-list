@@ -1116,11 +1116,23 @@ function delBackup(idx) {
 function downloadBackup(idx) {
   var b=db.backups[idx];
   if (!b.data) { toast('⚠ Dati backup non trovati'); return; }
-  var a=document.createElement('a');
-  a.href=b.data;
-  a.download=b.fileName||'backup';
-  a.click();
-  toast('↓ Download: '+b.fileName);
+  try {
+    var parts=b.data.split(',');
+    var mime=parts[0].match(/:(.*?);/)[1];
+    var raw=atob(parts[1]);
+    var u8=new Uint8Array(raw.length);
+    for (var i=0;i<raw.length;i++) u8[i]=raw.charCodeAt(i);
+    var blob=new Blob([u8],{type:mime||'application/octet-stream'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url; a.download=b.fileName||'backup';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
+    toast('↓ Download: '+b.fileName);
+  } catch(e) {
+    toast('⚠ Errore download: '+e.message);
+  }
 }
 function formatBytes(bytes) {
   if (bytes<1024) return bytes+' B';
