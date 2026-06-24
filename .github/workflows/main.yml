@@ -17,8 +17,8 @@ jobs:
       - name: Add Android Platform
         run: npx cap add android
         
-      - name: Copy Web Assets
-        run: npx cap copy
+      - name: Sync (copy + plugins)
+        run: npx cap sync
         
       - name: Build Android Project
         run: |

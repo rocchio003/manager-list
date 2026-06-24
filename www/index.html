@@ -1119,19 +1119,21 @@ function downloadBackup(idx) {
   try {
     var parts=b.data.split(',');
     var mime=(parts[0].match(/:(.*?);/)||[])[1]||'application/octet-stream';
-    var raw=atob(parts[1]);
+    var base64=parts[1];
+    // Capacitor Filesystem (Android APK)
+    if (typeof Capacitor!=='undefined'&&Capacitor.isNativePlatform()) {
+      Capacitor.Plugins.Filesystem.writeFile({
+        path: b.fileName||'backup',
+        data: base64,
+        directory: 'DOWNLOADS'
+      }).then(function(){toast('✓ Salvato in Download');}).catch(function(e){toast('⚠ Errore: '+e.message);});
+      return;
+    }
+    // Browser: blob + anchor click
+    var raw=atob(base64);
     var u8=new Uint8Array(raw.length);
     for (var i=0;i<raw.length;i++) u8[i]=raw.charCodeAt(i);
     var blob=new Blob([u8],{type:mime});
-    // Prova navigator.share (mobile - salva/scarica file)
-    if (typeof navigator.share==='function'&&typeof navigator.canShare==='function') {
-      var file=new File([blob], b.fileName||'backup',{type:mime});
-      if (navigator.canShare({files:[file]})) {
-        navigator.share({files:[file]}).then(function(){toast('✓ Backup salvato');}).catch(function(e){});
-        return;
-      }
-    }
-    // Fallback: blob URL + anchor click (desktop)
     var url=URL.createObjectURL(blob);
     var a=document.createElement('a');
     a.href=url; a.download=b.fileName||'backup';
