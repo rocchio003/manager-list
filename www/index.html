@@ -1121,11 +1121,11 @@ function downloadBackup(idx) {
     var mime=(parts[0].match(/:(.*?);/)||[])[1]||'application/octet-stream';
     var base64=parts[1];
     // Capacitor Filesystem (Android APK)
-    if (typeof Capacitor!=='undefined'&&Capacitor.isNativePlatform()) {
+    if (typeof Capacitor!=='undefined'&&Capacitor.isNativePlatform()&&Capacitor.Plugins&&Capacitor.Plugins.Filesystem) {
       Capacitor.Plugins.Filesystem.writeFile({
         path: b.fileName||'backup',
         data: base64,
-        directory: 'DOWNLOADS'
+        directory: 'DOCUMENTS'
       }).then(function(){toast('✓ Salvato in Download');}).catch(function(e){toast('⚠ Errore: '+e.message);});
       return;
     }
