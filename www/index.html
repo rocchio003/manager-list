@@ -787,6 +787,7 @@ function xtreamCard(l, idx) {
     +'<button class="btn btn-xs" onclick="cpCreds('+idx+')">⎘ Cred.</button>'
     +'<button class="btn btn-xs" onclick="cpNativeEpg('+idx+')" title="Copia EPG nativo">⎘ EPG</button>'
     +(epgName?'<button class="btn btn-xs" onclick="cpEpgFromX('+idx+')">⎘ EPG ext.</button>':'')
+    +'<button class="btn btn-xs" onclick="testX('+idx+')" title="Test connessione server">🔍 Test</button>'
     +'<button class="btn btn-xs btn-icon" id="xrefbtn-'+idx+'" onclick="refreshX('+idx+')" title="Ricarica scadenza">🔄</button>'
     +'<button class="btn btn-xs btn-icon" onclick="openXtreamModal('+idx+')" title="Modifica">✏️</button>'
     +'<button class="btn btn-xs btn-icon btn-danger" onclick="delXtream('+idx+')">🗑</button>'
@@ -866,6 +867,66 @@ async function refreshX(idx) {
   else toast('⚠ Server non raggiungibile o CORS bloccato');
 }
 
+async function testX(idx) {
+  var l=db.xtream[idx];
+  var btn=event.target;
+  btn.innerHTML='<span class="spin"></span>'; btn.disabled=true;
+  var apiUrl=(l.host.replace(/\/$/,''))+'/player_api.php?username='+encodeURIComponent(l.user)+'&password='+encodeURIComponent(l.pass);
+  var info = { server: '❌ Offline', auth: '❌ No', active: '?', max: '?' };
+  // Tentativo diretto
+  try {
+    var res=await fetch(apiUrl,{signal:AbortSignal.timeout(8000)});
+    if (res.ok) {
+      var data=await res.json();
+      if (data&&data.user_info) {
+        var u=data.user_info;
+        info.server='✅ Online';
+        info.auth=u.auth==1||u.auth=='1'?'✅ OK':'❌ No';
+        info.active=u.active_cons||'0';
+        info.max=u.max_connections||'?';
+        if (parseInt(info.active)>=parseInt(info.max)) info.auth='🔴 OCCUPATO ('+info.active+'/'+info.max+')';
+        else info.auth='🟢 Libero ('+info.active+'/'+info.max+')';
+      }
+    }
+  } catch(e){ /* fallback proxy */ }
+  // Fallback proxy se diretto fallito
+  if (info.server==='❌ Offline') {
+    try {
+      var proxyUrl='https://provetta-addon.hf.space/proxy/stream?url='+encodeURIComponent(apiUrl);
+      var res2=await fetch(proxyUrl,{signal:AbortSignal.timeout(12000)});
+      if (res2.ok) {
+        var data2=await res2.json();
+        info.server='✅ Online (proxy)';
+        if (data2&&data2.user_info) {
+          var u2=data2.user_info;
+          info.auth=u2.auth==1||u2.auth=='1'?'✅ OK':'❌ No';
+          info.active=u2.active_cons||'0';
+          info.max=u2.max_connections||'?';
+          if (parseInt(info.active)>=parseInt(info.max)) info.auth='🔴 OCCUPATO ('+info.active+'/'+info.max+')';
+          else info.auth='🟢 Libero ('+info.active+'/'+info.max+')';
+        }
+      }
+    } catch(e2){}
+  }
+  btn.innerHTML='🔍 Test'; btn.disabled=false;
+  toast(info.server+' | Auth: '+info.auth+' | Connessioni: '+info.active+'/'+info.max);
+}
+
+async function testM3U(idx) {
+  var l=db.m3u[idx];
+  var btn=event.target;
+  btn.innerHTML='<span class="spin"></span>'; btn.disabled=true;
+  try {
+    var res=await fetch(l.url,{method:'HEAD',signal:AbortSignal.timeout(10000)});
+    btn.innerHTML='🔍 Test'; btn.disabled=false;
+    if (res.ok) toast('✅ Raggiungibile · HTTP '+res.status);
+    else toast('⚠ Non raggiungibile · HTTP '+res.status);
+  } catch(e) {
+    btn.innerHTML='🔍 Test'; btn.disabled=false;
+    toast('❌ Offline o irraggiungibile');
+  }
+}
+
 function cpXtream(i){ var l=db.xtream[i]; cp(l.host+'/get.php?username='+l.user+'&password='+l.pass+'&type=m3u_plus&output=ts'); }
 function cpM3Ux(i){ var l=db.xtream[i]; cp(l.host+'/get.php?username='+l.user+'&password='+l.pass+'&type=m3u_plus'); }
 function cpCreds(i){ var l=db.xtream[i]; cp('Host: '+l.host+'\nUsername: '+l.user+'\nPassword: '+l.pass); }
@@ -902,6 +963,7 @@ function m3uCard(l,idx) {
     +'</div>'
     +(l.notes?'<div class="note-line">💬 '+esc(l.notes)+'</div>':'')
     +'<div class="card-actions">'
+    +'<button class="btn btn-xs" onclick="testM3U('+idx+')" title="Test raggiungibilità playlist">🔍 Test</button>'
     +'<button class="btn btn-xs" onclick="cpM3UUrl('+idx+')">⎘ URL M3U</button>'
     +(epgObj?'<button class="btn btn-xs" onclick="cpEpgFromM3U('+idx+')">⎘ EPG URL</button>':'')
     +'<button class="btn btn-xs btn-icon" onclick="openM3UModal('+idx+')" title="Modifica">✏️</button>'
