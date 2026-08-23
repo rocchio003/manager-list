@@ -325,7 +325,6 @@ body.tv-mode .theme-sep { font-size: 12px; padding: 8px 14px 4px; }
   .theme-row { padding: 10px 12px; font-size: 14px; }
 }
 
-
 /* ── TEMI CHIARI: palette base ── */
 body[data-theme$="-light"] {
   --bg: #f5f6f8;
@@ -338,21 +337,15 @@ body[data-theme$="-light"] {
   --muted: #6b7280;
   --muted2: #4b5563;
 }
-
-/* Badge adattati a sfondo chiaro */
 body[data-theme$="-light"] .b-ok   { background:#e8f5d6; color:#3a7d00; }
 body[data-theme$="-light"] .b-soon { background:#fff3d6; color:#b37400; }
 body[data-theme$="-light"] .b-exp  { background:#ffe0e0; color:#c40000; }
 body[data-theme$="-light"] .b-unk  { background:#e8eaef; color:#4b5563; }
 body[data-theme$="-light"] .b-m3u  { background:#dbeafe; color:#1d4ed8; }
 body[data-theme$="-light"] .b-epg  { background:#ede9fe; color:#6d28d9; }
-
-/* Test panel */
 body[data-theme$="-light"] .test-result.online  { background:#e8f5d6; color:#1a1c23; }
 body[data-theme$="-light"] .test-result.offline { background:#ffe0e0; color:#c40000; }
 body[data-theme$="-light"] .test-result.testing { background:#f0f1f4; color:#4b5563; }
-
-/* Menu temi glassmorphism su chiaro */
 body[data-theme$="-light"] .theme-menu {
   background: rgba(255,255,255,0.96);
   box-shadow: 0 16px 40px rgba(0,0,0,.15);
@@ -1081,7 +1074,7 @@ function cpFallback(txt){
 
 /* ── SELF-SAVE ── */
 function getUpdatedHtml(){
-  // JSON incorporato dentro <script>: escape di '<' per evitare che
+  // JSON incorporato dentro tag script: escape di '<' per evitare che
   // un valore utente contenente la sequenza di chiusura dello script chiuda accidentalmente lo script.
   var json=JSON.stringify(db,null,2)
     .replace(/</g,'\\u003c')
@@ -1118,6 +1111,17 @@ async function fetchExpiry(host,user,pass){
       if(ts){ var d=new Date(parseInt(ts)*1000); if(!isNaN(d)) return d.toISOString().split('T')[0]; }
     }
   }catch(e){}
+  try{
+    var pu=getProxyUrl(apiUrl);
+    if(pu){
+      var res2=await fetch(pu,{signal:AbortSignal.timeout(12000)});
+      if(res2.ok){
+        var data2=await res2.json();
+        var ts2=data2&&data2.user_info&&data2.user_info.exp_date;
+        if(ts2){ var d2=new Date(parseInt(ts2)*1000); if(!isNaN(d2)) return d2.toISOString().split('T')[0]; }
+      }
+    }
+  }catch(e){}
   return null;
 }
 
@@ -1146,6 +1150,12 @@ async function loadM3UText(){
   ta.style.display='none'; loadEl.style.display='flex'; btn.disabled=true;
   var text=null;
   try{ var r=await fetch(m3uUrl,{signal:AbortSignal.timeout(20000)}); if(r.ok) text=await r.text(); }catch(e){}
+  if(!text){
+    try{
+      var pu=getProxyUrl(m3uUrl);
+      if(pu){ var r2=await fetch(pu,{signal:AbortSignal.timeout(25000)}); if(r2.ok) text=await r2.text(); }
+    }catch(e){}
+  }
   if(text&&!text.trim().startsWith('#EXTM3U')&&text.trim().startsWith('<')) text=null;
   loadEl.style.display='none'; ta.style.display=''; btn.disabled=false;
   if(text){
@@ -1155,7 +1165,8 @@ async function loadM3UText(){
     errEl.textContent='';
   } else {
     infoEl.textContent='Download fallito';
-    errEl.textContent='⚠ Impossibile scaricare. URL: '+m3uUrl;
+    var hint=isWebView()?" (l'app/APK potrebbe bloccare il download)":'';
+    errEl.textContent='⚠ Impossibile scaricare'+hint+'. URL: '+m3uUrl;
   }
 }
 
@@ -1171,6 +1182,24 @@ function downloadM3UText(){
   a.href=url; a.download=name+'.m3u'; a.click();
   setTimeout(function(){ URL.revokeObjectURL(url); },1000);
   toast('✓ '+name+'.m3u scaricato');
+}
+
+/* ══════════════════════════════════════════════════════════
+   CORS / WEBVIEW HELPERS
+══════════════════════════════════════════════════════════ */
+function isWebView() {
+  var ua = navigator.userAgent || '';
+  return /wv|WebView|Android.*Version\/.*Chrome\/\d+\.0\.0\.0/.test(ua) ||
+         (window.Android && window.Android.showToast) ||
+         (typeof window._cordovaNative !== 'undefined') ||
+         !(window.chrome && window.chrome.webstore);
+}
+function getProxyUrl(url) {
+  try {
+    var u = new URL(url);
+    if (u.hostname === 'localhost' || u.hostname === '127.0.0.1') return null;
+    return 'https://corsproxy.io/?' + encodeURIComponent(url);
+  } catch(e) { return null; }
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1194,49 +1223,74 @@ async function testServer(type, idx) {
   if (btn) btn.disabled = true;
 
   var data = null;
+  var networkError = false;
+  var corsBlocked = false;
 
   if (type === 'x') {
     var item = db.xtream[idx];
     if (!item) return;
     var apiUrl = item.host.replace(/\/$/,'') + '/player_api.php?username=' + encodeURIComponent(item.user) + '&password=' + encodeURIComponent(item.pass);
+
     try {
       var r = await fetch(apiUrl, { signal: AbortSignal.timeout(9000) });
       if (r.ok) data = await r.json();
-    } catch(e) {}
+    } catch(e) { networkError = true; if (e.name==='TypeError') corsBlocked = true; }
+
     if (!data) {
       try {
         var pu = getProxyUrl(apiUrl);
-        if (pu) { var r2 = await fetch(pu, { signal: AbortSignal.timeout(12000) }); if (r2.ok) data = await r2.json(); }
+        if (pu) { var r2 = await fetch(pu, { signal: AbortSignal.timeout(15000) }); if (r2.ok) data = await r2.json(); }
       } catch(e) {}
     }
-    if (btn) btn.disabled = false;
+
+    var reachable = false;
     if (!data) {
-      res.className = 'test-result offline';
-      res.innerHTML = '❌ Server non raggiungibile';
+      try { await fetch(apiUrl, { mode: 'no-cors', signal: AbortSignal.timeout(8000) }); reachable = true; } catch(e) {}
+    }
+
+    if (btn) btn.disabled = false;
+
+    if (data) {
+      var ui = data.user_info || {};
+      var si = data.server_info || {};
+      var auth = ui.auth;
+      var active = parseInt(ui.active_cons) || 0;
+      var maxc   = parseInt(ui.max_connections) || 0;
+      var expTs  = ui.exp_date ? new Date(parseInt(ui.exp_date)*1000) : null;
+      var expStr = expTs ? expTs.toLocaleDateString('it-IT') : 'N/D';
+      var status = ui.status || '';
+      if (!auth || status.toLowerCase() === 'disabled') {
+        res.className = 'test-result offline';
+        res.innerHTML = '❌ Credenziali non valide o account disabilitato';
+        return;
+      }
+      var full = maxc > 0 && active >= maxc;
+      var connColor = full ? 'var(--red)' : active > 0 ? 'var(--orange)' : 'var(--accent)';
+      res.className = 'test-result online';
+      res.innerHTML =
+        '✅ Server <b>ONLINE</b><br>' +
+        '<span style="color:var(--muted2)">Connessioni: </span><span style="color:'+connColor+'">' + active + ' / ' + maxc + '</span><br>' +
+        '<span style="color:var(--muted2)">Scadenza: </span>' + expStr +
+        (si.url ? '<br><span style="color:var(--muted2)">Server: </span>' + esc(si.url) + (si.port ? ':'+si.port : '') : '') +
+        (full ? '<br><span style="color:var(--red)">⚠ Connessioni esaurite</span>' : '');
       return;
     }
-    var ui = data.user_info || {};
-    var si = data.server_info || {};
-    var auth = ui.auth;
-    var active = parseInt(ui.active_cons) || 0;
-    var maxc   = parseInt(ui.max_connections) || 0;
-    var expTs  = ui.exp_date ? new Date(parseInt(ui.exp_date)*1000) : null;
-    var expStr = expTs ? expTs.toLocaleDateString('it-IT') : 'N/D';
-    var status = ui.status || '';
-    if (!auth || status.toLowerCase() === 'disabled') {
-      res.className = 'test-result offline';
-      res.innerHTML = '❌ Credenziali non valide o account disabilitato';
+
+    if (reachable) {
+      res.className = 'test-result online';
+      var hint = isWebView()
+        ? `<br><span style="color:var(--muted2);font-size:11px">⚠ L'app blocca le richieste esterne (CORS).<br>Apri questo file nel browser per vedere i dettagli.</span>`
+        : `<br><span style="color:var(--muted2);font-size:11px">⚠ Il server risponde ma blocca la lettura dei dati (CORS).</span>`;
+      res.innerHTML = '✅ Server <b>RAGGIUNGIBILE</b> (dettagli nascosti)' + hint;
       return;
     }
-    var full = maxc > 0 && active >= maxc;
-    var connColor = full ? 'var(--red)' : active > 0 ? 'var(--orange)' : 'var(--accent)';
-    res.className = 'test-result online';
-    res.innerHTML =
-      '✅ Server <b>ONLINE</b><br>' +
-      '<span style="color:var(--muted2)">Connessioni: </span><span style="color:'+connColor+'">' + active + ' / ' + maxc + '</span><br>' +
-      '<span style="color:var(--muted2)">Scadenza: </span>' + expStr +
-      (si.url ? '<br><span style="color:var(--muted2)">Server: </span>' + esc(si.url) + (si.port ? ':'+si.port : '') : '') +
-      (full ? '<br><span style="color:var(--red)">⚠ Connessioni esaurite</span>' : '');
+
+    res.className = 'test-result offline';
+    var errHint = isWebView()
+      ? `<br><span style="color:var(--muted2);font-size:11px">💡 Prova ad aprire il file direttamente nel browser.</span>`
+      : '';
+    res.innerHTML = '❌ Server non raggiungibile' + errHint;
+
   } else {
     var item = db.m3u[idx];
     if (!item) return;
@@ -1250,9 +1304,23 @@ async function testServer(type, idx) {
       ok = rm.status >= 200 && rm.status < 500;
     } catch(e) {}
 
+    if (!ok) {
+      try {
+        var pm = getProxyUrl(item.url);
+        if (pm) { var rm2 = await fetch(pm, { method:'GET', signal: AbortSignal.timeout(15000) }); ok = rm2.status >= 200 && rm2.status < 500; }
+      } catch(e) {}
+    }
+
+    if (!ok) {
+      try { await fetch(item.url, { mode: 'no-cors', signal: AbortSignal.timeout(8000) }); ok = true; } catch(e) {}
+    }
+
     if (btn) btn.disabled = false;
     res.className = ok ? 'test-result online' : 'test-result offline';
-    res.innerHTML = ok ? '✅ Server <b>ONLINE</b> — playlist raggiungibile' : '❌ Server non raggiungibile';
+    var m3uHint = (!ok && isWebView())
+      ? `<br><span style="color:var(--muted2);font-size:11px">💡 L'app/APK potrebbe bloccare le connessioni esterne. Prova nel browser.</span>`
+      : '';
+    res.innerHTML = (ok ? '✅ Server <b>ONLINE</b> — playlist raggiungibile' : '❌ Server non raggiungibile') + m3uHint;
   }
 }
 
