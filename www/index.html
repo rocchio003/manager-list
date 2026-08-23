@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it" data-theme="dark">
+<html lang="it">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,15 +8,6 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --font: 'Syne', sans-serif;
-  --mono: 'IBM Plex Mono', monospace;
-  --r: 10px; --r2: 14px;
-}
-
-/* ═══════════════════════════════════════════
-   TEMA 1 — Dark (default, verde/teal)
-═══════════════════════════════════════════════ */
-[data-theme="dark"] {
   --bg: #0b0c0e;
   --surface: #13151a;
   --surface2: #1a1d24;
@@ -25,124 +16,15 @@
   --border2: #2e3340;
   --accent: #c8f135;
   --accent2: #3dffc8;
-  --accent-text: #0b0c0e;
-  --accent-hover: #d6ff4a;
-  --danger-border: #3a1818;
-  --danger-hover-bg: #1e0e0e;
   --red: #ff4f4f;
   --orange: #ffaa3d;
   --blue: #5b9cf6;
   --text: #e2e6ef;
   --muted: #6b7280;
   --muted2: #9ca3af;
-  --icon-tv: #0b0c0e;
-  --icon-str: #0b0c0e;
-  --badge-ok-bg: #162806;
-  --badge-soon-bg: #2c1e04;
-  --badge-exp-bg: #2c0808;
-  --badge-m3u-bg: #0c1f38;
-  --badge-epg-bg: #1e1038;
-  --step-n-text: #0b0c0e;
-  --overlay: rgba(0,0,0,.75);
-}
-
-/* ═══════════════════════════════════════════
-   TEMA 2 — Synthwave (neon magenta/ciano)
-═══════════════════════════════════════════════ */
-[data-theme="synthwave"] {
-  --bg: #0d0b1a;
-  --surface: #151228;
-  --surface2: #1d1936;
-  --surface3: #262244;
-  --border: #2f2a52;
-  --border2: #3d3670;
-  --accent: #ff3df8;
-  --accent2: #00f0ff;
-  --accent-text: #0d0b1a;
-  --accent-hover: #ff6afa;
-  --danger-border: #3a1228;
-  --danger-hover-bg: #1e0a14;
-  --red: #ff5577;
-  --orange: #ff8844;
-  --blue: #6b7bff;
-  --text: #e8e0f0;
-  --muted: #7b6fa0;
-  --muted2: #a99cc9;
-  --icon-tv: #0d0b1a;
-  --icon-str: #0d0b1a;
-  --badge-ok-bg: #28103a;
-  --badge-soon-bg: #2c1a04;
-  --badge-exp-bg: #2c0818;
-  --badge-m3u-bg: #0c1f4a;
-  --badge-epg-bg: #1e1048;
-  --step-n-text: #0d0b1a;
-  --overlay: rgba(10,8,20,.85);
-}
-
-/* ═══════════════════════════════════════════
-   TEMA 3 — Amber (retro terminal)
-═══════════════════════════════════════════════ */
-[data-theme="amber"] {
-  --bg: #0a0800;
-  --surface: #141100;
-  --surface2: #1e1a00;
-  --surface3: #282300;
-  --border: #3a3408;
-  --border2: #4a4410;
-  --accent: #ffb000;
-  --accent2: #ffdd66;
-  --accent-text: #0a0800;
-  --accent-hover: #ffc533;
-  --danger-border: #3a1808;
-  --danger-hover-bg: #1e0c04;
-  --red: #ff5544;
-  --orange: #ff8800;
-  --blue: #88aaff;
-  --text: #ffddaa;
-  --muted: #8a7a40;
-  --muted2: #b8a660;
-  --icon-tv: #0a0800;
-  --icon-str: #0a0800;
-  --badge-ok-bg: #282000;
-  --badge-soon-bg: #2c1a00;
-  --badge-exp-bg: #2c0800;
-  --badge-m3u-bg: #0c1f38;
-  --badge-epg-bg: #1e1038;
-  --step-n-text: #0a0800;
-  --overlay: rgba(5,4,0,.8);
-}
-
-/* ═══════════════════════════════════════════
-   TEMA 4 — Light (chiaro professionale)
-═══════════════════════════════════════════════ */
-[data-theme="light"] {
-  --bg: #f4f6f9;
-  --surface: #ffffff;
-  --surface2: #eef0f4;
-  --surface3: #e4e7ee;
-  --border: #d0d4dd;
-  --border2: #b8bcc8;
-  --accent: #3366ff;
-  --accent2: #00b894;
-  --accent-text: #ffffff;
-  --accent-hover: #5588ff;
-  --danger-border: #e0b8b8;
-  --danger-hover-bg: #fef0f0;
-  --red: #d63a3a;
-  --orange: #d68000;
-  --blue: #3366ff;
-  --text: #1a1d24;
-  --muted: #7a7f8e;
-  --muted2: #9ca0ae;
-  --icon-tv: #ffffff;
-  --icon-str: #ffffff;
-  --badge-ok-bg: #e0f0d0;
-  --badge-soon-bg: #f0ead0;
-  --badge-exp-bg: #f0d8d8;
-  --badge-m3u-bg: #d0e0f0;
-  --badge-epg-bg: #e0d0f0;
-  --step-n-text: #ffffff;
-  --overlay: rgba(0,0,0,.3);
+  --font: 'Syne', sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+  --r: 10px; --r2: 14px;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
@@ -173,13 +55,13 @@ body.tv-mode .remote-bar { display: flex; }
 .btn { border: 1px solid var(--border2); background: var(--surface); color: var(--text); padding: 8px 16px; border-radius: var(--r); font-size: 13px; font-family: var(--font); font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.14s; white-space: nowrap; line-height: 1; }
 .btn:hover { border-color: var(--muted); background: var(--surface2); }
 .btn:active { transform: scale(0.97); }
-.btn-accent { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
-.btn-accent:hover { background: var(--accent-hover); }
+.btn-accent { background: var(--accent); color: #0b0c0e; border-color: var(--accent); }
+.btn-accent:hover { background: #d6ff4a; }
 .btn-sm { padding: 5px 12px; font-size: 12px; border-radius: 8px; }
 .btn-xs { padding: 4px 9px; font-size: 11px; border-radius: 7px; }
 .btn-icon { padding: 5px 9px; }
-.btn-danger { border-color: var(--danger-border); color: var(--red); }
-.btn-danger:hover { background: var(--danger-hover-bg); border-color: var(--red); }
+.btn-danger { border-color: #3a1818; color: var(--red); }
+.btn-danger:hover { background: #1e0e0e; border-color: var(--red); }
 
 /* ── TV MODE BUTTONS — più grandi e spaziosi ── */
 body.tv-mode .btn { padding: 12px 22px; font-size: 15px; border-radius: 12px; }
@@ -234,39 +116,6 @@ body.tv-mode .tv-focus { outline-width: 2px !important; }
 .tab-count { font-size: 10px; background: var(--surface3); color: var(--muted2); padding: 1px 6px; border-radius: 20px; font-family: var(--mono); }
 .tab.active .tab-count { background: var(--border2); color: var(--text); }
 
-/* ── BRAND ICON SVG (theme-aware) ── */
-.brand-icon { color: var(--accent); }
-.brand-icon svg .icon-tv { fill: var(--icon-tv); }
-.brand-icon svg .icon-stand { stroke: var(--icon-str); fill: none; }
-
-/* ── THEME SELECTOR ── */
-.theme-wrap { position: relative; }
-.theme-btn {
-  border: 1px solid var(--border2); background: var(--surface); color: var(--muted2);
-  padding: 5px 10px; border-radius: var(--r); font-size: 12px; font-family: var(--mono);
-  cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.14s; line-height: 1;
-  white-space: nowrap; height: 100%;
-}
-.theme-btn:hover { border-color: var(--muted); background: var(--surface2); }
-.theme-btn .tb-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
-.theme-dropdown {
-  position: absolute; top: calc(100% + 4px); right: 0; z-index: 100;
-  background: var(--surface); border: 1px solid var(--border2); border-radius: var(--r);
-  padding: 4px; display: none; flex-direction: column; min-width: 150px; box-shadow: 0 8px 24px rgba(0,0,0,.5);
-}
-.theme-dropdown.open { display: flex; }
-.theme-opt {
-  display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 6px;
-  border: none; background: none; color: var(--text); font-size: 12px; font-family: var(--font);
-  cursor: pointer; transition: background 0.12s; text-align: left; width: 100%;
-}
-.theme-opt:hover { background: var(--surface2); }
-.theme-opt.active { background: var(--surface3); }
-.theme-opt .to-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; border: 1px solid var(--border2); }
-
-body.tv-mode .theme-btn { padding: 10px 16px; font-size: 14px; }
-body.tv-mode .theme-opt { padding: 10px 14px; font-size: 14px; }
-
 /* ── SECTIONS ── */
 .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
 .section-label { font-size: 10px; font-family: var(--mono); letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase; }
@@ -279,12 +128,12 @@ body.tv-mode .theme-opt { padding: 10px 14px; font-size: 14px; }
 .card-name { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .card-meta { font-size: 11px; font-family: var(--mono); color: var(--muted); white-space: nowrap; }
 .badge { font-size: 10px; font-family: var(--mono); padding: 2px 8px; border-radius: 20px; font-weight: 500; letter-spacing: .03em; }
-.b-ok   { background:var(--badge-ok-bg); color:var(--accent); }
-.b-soon { background:var(--badge-soon-bg); color:var(--orange); }
-.b-exp  { background:var(--badge-exp-bg); color:var(--red); }
+.b-ok   { background:#162806; color:var(--accent); }
+.b-soon { background:#2c1e04; color:var(--orange); }
+.b-exp  { background:#2c0808; color:var(--red); }
 .b-unk  { background:var(--surface2); color:var(--muted2); }
-.b-m3u  { background:var(--badge-m3u-bg); color:var(--blue); }
-.b-epg  { background:var(--badge-epg-bg); color:color-mix(in srgb, var(--accent2) 60%, white); }
+.b-m3u  { background:#0c1f38; color:var(--blue); }
+.b-epg  { background:#1e1038; color:#b08bff; }
 .fields { display: grid; grid-template-columns: 72px 1fr; gap: 3px 10px; font-size: 12px; margin-bottom: 10px; align-items: center; }
 .fl { color: var(--muted); font-family: var(--mono); font-size: 11px; }
 .fv { font-family: var(--mono); color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
@@ -306,7 +155,7 @@ body.tv-mode .theme-opt { padding: 10px 14px; font-size: 14px; }
 .empty small { font-size: 12px; font-family: var(--mono); }
 
 /* ── MODAL ── */
-.overlay { position: fixed; inset: 0; background: var(--overlay); display: none; align-items: center; justify-content: center; z-index: 200; padding: 1rem; }
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,.75); display: none; align-items: center; justify-content: center; z-index: 200; padding: 1rem; }
 .overlay.open { display: flex; }
 .modal { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--r2); padding: 1.75rem; width: 100%; max-width: 520px; max-height: 92vh; overflow-y: auto; }
 .modal-title { font-size: 17px; font-weight: 800; margin-bottom: 1.5rem; letter-spacing: -.02em; }
@@ -337,7 +186,7 @@ body.tv-mode .modal-footer { gap: 12px; margin-top: 2rem; }
 
 /* ── GIST SETUP STEPS ── */
 .step { display: flex; gap: 11px; margin-bottom: 13px; }
-.step-n { width: 21px; height: 21px; background: var(--accent); color: var(--step-n-text); border-radius: 50%; font-size: 11px; font-weight: 800; display: grid; place-items: center; flex-shrink: 0; margin-top: 2px; }
+.step-n { width: 21px; height: 21px; background: var(--accent); color: #0b0c0e; border-radius: 50%; font-size: 11px; font-weight: 800; display: grid; place-items: center; flex-shrink: 0; margin-top: 2px; }
 .step-b { font-size: 13px; line-height: 1.6; }
 .step-b a { color: var(--accent2); text-decoration: none; }
 .step-b code { background: var(--surface2); padding: 1px 5px; border-radius: 4px; font-family: var(--mono); font-size: 11px; }
@@ -351,10 +200,43 @@ body.tv-mode .toast { font-size: 16px; padding: 14px 28px; bottom: 2.5rem; }
 .spin { width: 13px; height: 13px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: rot .65s linear infinite; display: inline-block; flex-shrink: 0; }
 @keyframes rot { to{transform:rotate(360deg)} }
 
+/* ── TEST CANALE PANEL ── */
+.test-panel { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; display: none; }
+.test-panel.open { display: block; }
+.test-row { display: flex; gap: 6px; align-items: center; }
+.test-input { flex: 1; background: var(--bg); border: 1px solid var(--border2); color: var(--text); padding: 7px 10px; border-radius: 8px; font-size: 12px; font-family: var(--mono); outline: none; min-width: 0; }
+.test-input:focus { border-color: var(--accent); }
+.test-result { margin-top: 8px; font-size: 12px; font-family: var(--mono); padding: 10px 12px; border-radius: 8px; display: none; line-height: 1.7; }
+.test-result.online  { display: block; background: #162806; color: var(--text); }
+.test-result.offline { display: block; background: #2c0808; color: var(--red); }
+.test-result.testing { display: flex; align-items: center; gap: 8px; background: var(--surface2); color: var(--muted2); }
+body.tv-mode .test-result { font-size: 13px; padding: 12px 14px; }
+
 /* ── SAVE HINT ── */
 .save-hint { font-size: 11px; color: var(--muted); font-family: var(--mono); text-align: center; margin-top: 2.5rem; }
 .save-hint a { color: var(--accent2); cursor: pointer; text-decoration: underline; }
 body.tv-mode .save-hint { display: none; }
+
+/* ── EDITOR RAW ── */
+.editor-modal { max-width: 760px; }
+.etabs { display: flex; gap: 4px; margin-bottom: 14px; background: var(--surface2); border-radius: 8px; padding: 3px; width: fit-content; }
+.etab { padding: 6px 18px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; color: var(--muted2); background: none; border: none; font-family: var(--font); transition: all 0.12s; }
+.etab:hover { color: var(--text); }
+.etab.active { background: var(--surface3); color: var(--text); }
+#m3u-editor { width:100%; min-height:320px; max-height:52vh; background:var(--bg); border:1px solid var(--border2); color:var(--text); padding:12px; border-radius:8px; font-size:11px; font-family:var(--mono); outline:none; resize:vertical; line-height:1.55; }
+#m3u-editor:focus { border-color: var(--accent); }
+body.tv-mode #m3u-editor { font-size:13px; }
+.editor-toolbar { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; flex-wrap: wrap; }
+.editor-toolbar span { font-size: 11px; font-family: var(--mono); color: var(--muted); flex: 1; }
+#raw-editor {
+  width: 100%; min-height: 340px; max-height: 55vh;
+  background: var(--bg); border: 1px solid var(--border2); color: var(--text);
+  padding: 12px; border-radius: 8px; font-size: 12px; font-family: var(--mono);
+  outline: none; resize: vertical; line-height: 1.6;
+}
+#raw-editor:focus { border-color: var(--accent); }
+.editor-error { font-size: 11px; font-family: var(--mono); color: var(--red); margin-top: 6px; min-height: 16px; }
+body.tv-mode #raw-editor { font-size: 14px; min-height: 280px; }
 
 /* ── RESPONSIVE ── */
 @media(max-width:560px){
@@ -363,6 +245,137 @@ body.tv-mode .save-hint { display: none; }
   .tabs{width:100%;}
   .tab{flex:1;justify-content:center;padding:7px 8px;font-size:12px;}
 }
+
+/* ── THEMES DROPDOWN ── */
+.theme-dropdown-wrap { position: relative; display: inline-block; }
+.theme-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 180px;
+  background: rgba(19, 21, 26, 0.96);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  padding: 6px;
+  display: none;
+  flex-direction: column;
+  gap: 3px;
+  z-index: 300;
+  box-shadow: 0 16px 40px rgba(0,0,0,.55);
+}
+.theme-menu.open { display: flex; }
+.theme-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: none;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .12s, border-color .12s, color .12s;
+  text-align: left;
+}
+.theme-row:hover { background: var(--surface3); border-color: var(--border2); }
+.theme-row.active { background: var(--surface3); border-color: var(--accent); color: var(--accent); }
+.theme-swatch {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 2px solid var(--border2);
+}
+body.tv-mode .theme-menu { min-width: 220px; padding: 10px; gap: 5px; }
+body.tv-mode .theme-row { padding: 11px 14px; font-size: 15px; border-radius: 10px; }
+body.tv-mode .theme-swatch { width: 20px; height: 20px; }
+
+.theme-sep {
+  font-size: 10px;
+  font-family: var(--mono);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 6px 12px 2px;
+  pointer-events: none;
+}
+body.tv-mode .theme-sep { font-size: 12px; padding: 8px 14px 4px; }
+
+/* Mobile: menu centrato, mai fuori schermo */
+@media(max-width:560px){
+  .theme-menu {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    transform: translate(-50%, -50%);
+    width: min(300px, calc(100vw - 2rem));
+    min-width: auto;
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 10px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.7);
+    border-color: var(--border);
+  }
+  .theme-row { padding: 10px 12px; font-size: 14px; }
+}
+
+
+/* ── TEMI CHIARI: palette base ── */
+body[data-theme$="-light"] {
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --surface2: #f0f1f4;
+  --surface3: #e8eaef;
+  --border: #d1d5db;
+  --border2: #c4c8d0;
+  --text: #1a1c23;
+  --muted: #6b7280;
+  --muted2: #4b5563;
+}
+
+/* Badge adattati a sfondo chiaro */
+body[data-theme$="-light"] .b-ok   { background:#e8f5d6; color:#3a7d00; }
+body[data-theme$="-light"] .b-soon { background:#fff3d6; color:#b37400; }
+body[data-theme$="-light"] .b-exp  { background:#ffe0e0; color:#c40000; }
+body[data-theme$="-light"] .b-unk  { background:#e8eaef; color:#4b5563; }
+body[data-theme$="-light"] .b-m3u  { background:#dbeafe; color:#1d4ed8; }
+body[data-theme$="-light"] .b-epg  { background:#ede9fe; color:#6d28d9; }
+
+/* Test panel */
+body[data-theme$="-light"] .test-result.online  { background:#e8f5d6; color:#1a1c23; }
+body[data-theme$="-light"] .test-result.offline { background:#ffe0e0; color:#c40000; }
+body[data-theme$="-light"] .test-result.testing { background:#f0f1f4; color:#4b5563; }
+
+/* Menu temi glassmorphism su chiaro */
+body[data-theme$="-light"] .theme-menu {
+  background: rgba(255,255,255,0.96);
+  box-shadow: 0 16px 40px rgba(0,0,0,.15);
+  border-color: var(--border2);
+}
+body[data-theme$="-light"] .theme-row:hover { background: var(--surface3); }
+body[data-theme$="-light"] .theme-row.active { background: var(--surface3); border-color: var(--accent); }
+
+/* ── TEMI SCURI (accent) ── */
+body[data-theme="blue"]   { --accent:#5b9cf6; --accent2:#62d9ff; }
+body[data-theme="purple"] { --accent:#b08bff; --accent2:#e0b7ff; }
+body[data-theme="orange"] { --accent:#ffaa3d; --accent2:#ffd166; }
+body[data-theme="red"]    { --accent:#ff5b6e; --accent2:#ff9aa7; }
+body[data-theme="cyan"]   { --accent:#3dffc8; --accent2:#7be8ff; }
+
+/* ── TEMI CHIARI (accent) ── */
+body[data-theme="lime-light"]  { --accent:#7ab800; --accent2:#5a9e00; }
+body[data-theme="blue-light"]  { --accent:#2563eb; --accent2:#1d4ed8; }
+body[data-theme="purple-light"]{ --accent:#7c3aed; --accent2:#6d28d9; }
+body[data-theme="orange-light"]{ --accent:#d97706; --accent2:#b45309; }
+body[data-theme="red-light"]   { --accent:#dc2626; --accent2:#b91c1c; }
+body[data-theme="cyan-light"]  { --accent:#0891b2; --accent2:#0e7490; }
+
 </style>
 </head>
 <body>
@@ -373,10 +386,10 @@ body.tv-mode .save-hint { display: none; }
     <div class="brand">
       <div class="brand-icon">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect class="icon-tv" x="2" y="3" width="20" height="14" rx="2"/>
-          <path class="icon-stand" d="M8 21h8M12 17v4" stroke-width="2" stroke-linecap="round"/>
-          <path d="M5 7h14M5 11h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <circle cx="18" cy="11" r="2.5" fill="currentColor"/>
+          <rect x="2" y="3" width="20" height="14" rx="2" fill="#0b0c0e"/>
+          <path d="M8 21h8M12 17v4" stroke="#0b0c0e" stroke-width="2" stroke-linecap="round"/>
+          <path d="M5 7h14M5 11h9" stroke="#c8f135" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="18" cy="11" r="2.5" fill="#c8f135"/>
         </svg>
       </div>
       <div>
@@ -385,28 +398,28 @@ body.tv-mode .save-hint { display: none; }
       </div>
     </div>
     <div class="header-actions">
-      <span class="tv-badge">📺 TV MODE</span>
-      <div class="theme-wrap" id="theme-wrap">
-        <button class="theme-btn" id="btn-theme" onclick="toggleThemeDropdown()" title="Cambia tema">
-          <span class="tb-dot" id="theme-dot" style="background:var(--accent)"></span>
-          <span id="theme-label">Tema</span>
-        </button>
-        <div class="theme-dropdown" id="theme-dropdown">
-          <button class="theme-opt" data-theme-val="dark" onclick="setTheme('dark')">
-            <span class="to-dot" style="background:#c8f135"></span>🌙 Dark
-          </button>
-          <button class="theme-opt" data-theme-val="synthwave" onclick="setTheme('synthwave')">
-            <span class="to-dot" style="background:#ff3df8"></span>🎆 Synthwave
-          </button>
-          <button class="theme-opt" data-theme-val="amber" onclick="setTheme('amber')">
-            <span class="to-dot" style="background:#ffb000"></span>🟠 Amber
-          </button>
-          <button class="theme-opt" data-theme-val="light" onclick="setTheme('light')">
-            <span class="to-dot" style="background:#3366ff"></span>☀️ Light
-          </button>
+      <div class="theme-dropdown-wrap" id="theme-dropdown-wrap">
+        <button class="btn" id="theme-toggle" onclick="toggleThemeMenu()" title="Scegli combinazione colori">🎨 Temi</button>
+        <div class="theme-menu" id="theme-menu">
+          <div class="theme-sep">Scuri</div>
+          <button class="theme-row" data-theme-choice="lime"  onclick="selectTheme('lime')"> <span class="theme-swatch" style="background:#c8f135"></span> Lime </button>
+          <button class="theme-row" data-theme-choice="blue"  onclick="selectTheme('blue')"> <span class="theme-swatch" style="background:#5b9cf6"></span> Blu </button>
+          <button class="theme-row" data-theme-choice="purple" onclick="selectTheme('purple')"> <span class="theme-swatch" style="background:#b08bff"></span> Viola </button>
+          <button class="theme-row" data-theme-choice="orange" onclick="selectTheme('orange')"> <span class="theme-swatch" style="background:#ffaa3d"></span> Arancio </button>
+          <button class="theme-row" data-theme-choice="red"   onclick="selectTheme('red')"> <span class="theme-swatch" style="background:#ff5b6e"></span> Rosso </button>
+          <button class="theme-row" data-theme-choice="cyan"  onclick="selectTheme('cyan')"> <span class="theme-swatch" style="background:#3dffc8"></span> Ciano </button>
+          <div class="theme-sep">Chiari</div>
+          <button class="theme-row" data-theme-choice="lime-light"  onclick="selectTheme('lime-light')"> <span class="theme-swatch" style="background:#7ab800"></span> Lime chiaro </button>
+          <button class="theme-row" data-theme-choice="blue-light"  onclick="selectTheme('blue-light')"> <span class="theme-swatch" style="background:#2563eb"></span> Blu chiaro </button>
+          <button class="theme-row" data-theme-choice="purple-light" onclick="selectTheme('purple-light')"> <span class="theme-swatch" style="background:#7c3aed"></span> Viola chiaro </button>
+          <button class="theme-row" data-theme-choice="orange-light" onclick="selectTheme('orange-light')"> <span class="theme-swatch" style="background:#d97706"></span> Arancio chiaro </button>
+          <button class="theme-row" data-theme-choice="red-light"   onclick="selectTheme('red-light')"> <span class="theme-swatch" style="background:#dc2626"></span> Rosso chiaro </button>
+          <button class="theme-row" data-theme-choice="cyan-light"  onclick="selectTheme('cyan-light')"> <span class="theme-swatch" style="background:#0891b2"></span> Ciano chiaro </button>
         </div>
       </div>
+      <span class="tv-badge">📺 TV MODE</span>
       <button class="btn" id="btn-tv-toggle" onclick="toggleTvMode()" title="Attiva/disattiva modalità TV">📺</button>
+      <button class="btn" onclick="openEditor()" title="Modifica dati come testo">✏ Editor</button>
       <button class="btn" onclick="openGistSetup()">☁ Sync</button>
       <button class="btn btn-accent" id="btn-add-main" onclick="openAddModal()">+ Aggiungi</button>
     </div>
@@ -445,20 +458,12 @@ body.tv-mode .save-hint { display: none; }
     <button class="tab" id="tab-epg" onclick="switchTab('epg')" tabindex="0">
       📡 EPG <span class="tab-count" id="tc-epg">0</span>
     </button>
-    <button class="tab" id="tab-notes" onclick="switchTab('notes')" tabindex="0">
-      📝 Appunti <span class="tab-count" id="tc-notes">0</span>
-    </button>
-    <button class="tab" id="tab-backups" onclick="switchTab('backups')" tabindex="0">
-      💾 Backup <span class="tab-count" id="tc-backups">0</span>
-    </button>
   </div>
 
   <!-- CONTENT -->
   <div id="content-xtream"></div>
   <div id="content-m3u" style="display:none"></div>
   <div id="content-epg" style="display:none"></div>
-  <div id="content-notes" style="display:none"></div>
-  <div id="content-backups" style="display:none"></div>
 
   <div class="save-hint">
     Dati incorporati nel file HTML. &nbsp;
@@ -538,6 +543,7 @@ body.tv-mode .save-hint { display: none; }
   </div>
 </div>
 
+
 <!-- MODAL: GIST -->
 <div class="overlay" id="modal-gist">
   <div class="modal" onclick="event.stopPropagation()">
@@ -554,79 +560,106 @@ body.tv-mode .save-hint { display: none; }
   </div>
 </div>
 
-<!-- MODAL: NOTE -->
-<div class="overlay" id="modal-note">
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-title" id="mn-title">Nuovo appunto</div>
-    <div class="fg"><label class="fl2">Titolo / Nome</label><input type="text" id="mn-name" placeholder="Es. Link Sparkle TV…" /></div>
-    <div class="fg"><label class="fl2">Testo / Link</label><textarea id="mn-text" rows="4" placeholder="Incolla qui note, link, credenziali…" style="font-size:12px;line-height:1.5"></textarea></div>
-    <p class="hint">📝 Puoi scrivere appunti, URL, o qualsiasi informazione utile. Il testo sarà copiabile con un click.</p>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeModal('modal-note')">Annulla</button>
-      <button class="btn btn-accent" onclick="saveNote()">Salva</button>
+<!-- MODAL: EDITOR LISTA -->
+<div class="overlay" id="modal-editor">
+  <div class="modal editor-modal" onclick="event.stopPropagation()">
+    <div class="modal-title" id="editor-title">✏ Editor lista</div>
+
+    <!-- TAB BAR -->
+    <div class="etabs">
+      <button class="etab active" id="etab-data"  onclick="switchEditorTab('data')">📋 Dati lista</button>
+      <button class="etab"        id="etab-m3u"   onclick="switchEditorTab('m3u')">📺 Playlist M3U</button>
     </div>
+
+    <!-- TAB: DATI -->
+    <div id="epanel-data">
+      <div class="editor-toolbar">
+        <span id="editor-info">Modifica i dati della lista.</span>
+        <button class="btn btn-xs" onclick="editorFormat()">⇄ Formatta</button>
+        <button class="btn btn-xs" onclick="editorSelectAll('raw-editor')">⊞ Seleziona tutto</button>
+      </div>
+      <textarea id="raw-editor" spellcheck="false"></textarea>
+      <div class="editor-error" id="editor-error"></div>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeModal('modal-editor')">Annulla</button>
+        <button class="btn btn-accent" onclick="saveEditor()">💾 Salva dati</button>
+      </div>
+    </div>
+
+    <!-- TAB: PLAYLIST M3U -->
+    <div id="epanel-m3u" style="display:none">
+      <div class="editor-toolbar">
+        <span id="m3u-info">— </span>
+        <button class="btn btn-xs" id="btn-load-m3u" onclick="loadM3UText()">⬇ Carica playlist</button>
+        <button class="btn btn-xs" onclick="editorSelectAll('m3u-editor')">⊞ Seleziona tutto</button>
+        <button class="btn btn-xs btn-accent" onclick="downloadM3UText()">↓ Scarica .m3u</button>
+      </div>
+      <div id="m3u-loading" style="display:none;font-size:12px;font-family:var(--mono);color:var(--muted);padding:12px 0;align-items:center;gap:8px"><span class="spin"></span> Download playlist in corso…</div>
+      <textarea id="m3u-editor" spellcheck="false" placeholder="Clicca 'Carica playlist' per scaricare i canali dal server…"></textarea>
+      <div class="editor-error" id="m3u-error"></div>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeModal('modal-editor')">Chiudi</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<!-- MODAL: BACKUP -->
-<div class="overlay" id="modal-backup">
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-title" id="mb-title">Carica backup</div>
-    <div class="fg"><label class="fl2">Nome backup</label><input type="text" id="mb-name" placeholder="Es. Sparkle TV - 2024-06-20" /></div>
-    <div class="fg"><label class="fl2">File (config, backup, zip…)</label><input type="file" id="mb-file" style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:8px;width:100%;color:var(--text);font-family:var(--mono);font-size:12px;" /></div>
-    <p class="hint">💾 Il file viene incorporato nel HTML. Per backup grandi meglio scaricare il file separatamente.</p>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeModal('modal-backup')">Annulla</button>
-      <button class="btn btn-accent" onclick="saveBackup()">Carica</button>
-    </div>
-  </div>
-</div>
 
 <script>
 /* ══════════════════════════════════════════════════════════
    EMBEDDED DATA
 ══════════════════════════════════════════════════════════ */
 // IPTV_DATA_START
-var SAVED = { xtream: [], m3u: [], epg: [], notes: [], backups: [] };
+var SAVED = { xtream: [], m3u: [], epg: [] };
 // IPTV_DATA_END
 
 /* ══════════════════════════════════════════════════════════
    STATE
 ══════════════════════════════════════════════════════════ */
-var db = { xtream: [], m3u: [], epg: [], notes: [], backups: [] };
+var db = { xtream: [], m3u: [], epg: [] };
 var currentTab = 'xtream';
-var editMode = { xtream: null, m3u: null, epg: null, notes: null, backups: null };
+var editMode = { xtream: null, m3u: null, epg: null };
 var gistToken = '', gistId = '';
 var tvMode = false;
-var theme = 'dark';
+var currentTheme = 'lime';
 
-var themeMeta = {
-  dark:      { label:'Dark',      dot:'#c8f135', icon:'🌙' },
-  synthwave: { label:'Synthwave', dot:'#ff3df8', icon:'🎆' },
-  amber:     { label:'Amber',     dot:'#ffb000', icon:'🟠' },
-  light:     { label:'Light',     dot:'#3366ff', icon:'☀️' }
-};
+/* ══════════════════════════════════════════════════════════
+   DATA NORMALIZATION
+══════════════════════════════════════════════════════════ */
+function normalizeDb(value){
+  var src = (value && typeof value === 'object') ? value : {};
+  var normalized = {
+    xtream: Array.isArray(src.xtream) ? src.xtream : [],
+    m3u: Array.isArray(src.m3u) ? src.m3u : [],
+    epg: Array.isArray(src.epg) ? src.epg : []
+  };
+  ['xtream','m3u','epg'].forEach(function(k){
+    normalized[k] = normalized[k].filter(function(x){
+      return x && typeof x === 'object';
+    }).map(function(x){
+      var y = Object.assign({}, x);
+      if (!y.id) y.id = uid();
+      return y;
+    });
+  });
+  return normalized;
+}
 
 /* ══════════════════════════════════════════════════════════
    INIT
 ══════════════════════════════════════════════════════════ */
 function init() {
-  db = JSON.parse(JSON.stringify(SAVED));
+  db = normalizeDb(SAVED);
+
   gistToken = localStorage.getItem('iptv_gh_token') || '';
   gistId    = localStorage.getItem('iptv_gist_id')  || '';
   tvMode    = localStorage.getItem('iptv_tv_mode') === '1';
-  theme     = localStorage.getItem('iptv_theme') || 'dark';
+  currentTheme = localStorage.getItem('iptv_theme') || 'lime';
+  applyTheme(currentTheme);
   if (tvMode) document.body.classList.add('tv-mode');
-  applyTheme(theme);
   updateGistBar();
   renderAll();
-  // Close theme dropdown on outside click
-  document.addEventListener('click', function(e) {
-    var wrap = document.getElementById('theme-wrap');
-    if (wrap && !wrap.contains(e.target)) {
-      document.getElementById('theme-dropdown').classList.remove('open');
-    }
-  });
   document.querySelectorAll('.overlay').forEach(function(o) {
     o.addEventListener('click', function(e) { if (e.target === o) o.classList.remove('open'); });
   });
@@ -635,6 +668,47 @@ function init() {
     setTimeout(function(){ gistPull(true); }, 800);
   }
 }
+
+/* ══════════════════════════════════════════════════════════
+   THEMES
+══════════════════════════════════════════════════════════ */
+function applyTheme(theme) {
+  var allowed = ['lime','blue','purple','orange','red','cyan',
+                 'lime-light','blue-light','purple-light','orange-light','red-light','cyan-light'];
+  if (allowed.indexOf(theme) === -1) theme = 'lime';
+  currentTheme = theme;
+  if (theme === 'lime') document.body.removeAttribute('data-theme');
+  else document.body.setAttribute('data-theme', theme);
+  localStorage.setItem('iptv_theme', theme);
+  document.querySelectorAll('.theme-row').forEach(function(btn) {
+    btn.classList.toggle('active', btn.getAttribute('data-theme-choice') === theme);
+  });
+}
+function selectTheme(theme) {
+  applyTheme(theme);
+  var names = {
+    lime:'Lime', blue:'Blu', purple:'Viola', orange:'Arancio', red:'Rosso', cyan:'Ciano',
+    'lime-light':'Lime chiaro', 'blue-light':'Blu chiaro', 'purple-light':'Viola chiaro',
+    'orange-light':'Arancio chiaro', 'red-light':'Rosso chiaro', 'cyan-light':'Ciano chiaro'
+  };
+  toast('🎨 Tema: ' + (names[theme] || theme));
+}
+document.addEventListener('DOMContentLoaded', function() {
+  applyTheme(currentTheme);
+});
+
+function toggleThemeMenu() {
+  var menu = document.getElementById('theme-menu');
+  menu.classList.toggle('open');
+}
+function closeThemeMenu() {
+  var menu = document.getElementById('theme-menu');
+  menu.classList.remove('open');
+}
+document.addEventListener('click', function(e) {
+  var wrap = document.getElementById('theme-dropdown-wrap');
+  if (wrap && !wrap.contains(e.target)) closeThemeMenu();
+});
 
 /* ══════════════════════════════════════════════════════════
    TV MODE
@@ -648,50 +722,15 @@ function toggleTvMode() {
 }
 
 /* ══════════════════════════════════════════════════════════
-   THEME
-══════════════════════════════════════════════════════════ */
-function setTheme(t) {
-  theme = t;
-  localStorage.setItem('iptv_theme', theme);
-  applyTheme(theme);
-  updateThemeUI();
-  document.getElementById('theme-dropdown').classList.remove('open');
-  toast(themeMeta[theme].icon + ' Tema ' + themeMeta[theme].label);
-  setTimeout(function(){ window.afterRender && window.afterRender(); }, 100);
-}
-
-function applyTheme(t) {
-  document.documentElement.setAttribute('data-theme', t);
-}
-
-function toggleThemeDropdown() {
-  var dd = document.getElementById('theme-dropdown');
-  dd.classList.toggle('open');
-  updateThemeUI();
-}
-
-function updateThemeUI() {
-  var m = themeMeta[theme] || themeMeta.dark;
-  var dot = document.getElementById('theme-dot');
-  var lbl = document.getElementById('theme-label');
-  if (dot) dot.style.background = m.dot;
-  if (lbl) lbl.textContent = m.icon + ' ' + m.label;
-  // Highlight active option in dropdown
-  document.querySelectorAll('.theme-opt').forEach(function(el) {
-    el.classList.toggle('active', el.getAttribute('data-theme-val') === theme);
-  });
-}
-
-/* ══════════════════════════════════════════════════════════
    TABS
 ══════════════════════════════════════════════════════════ */
 function switchTab(tab) {
   currentTab = tab;
-  ['xtream','m3u','epg','notes','backups'].forEach(function(t) {
+  ['xtream','m3u','epg'].forEach(function(t) {
     document.getElementById('tab-'+t).classList.toggle('active', t===tab);
     document.getElementById('content-'+t).style.display = t===tab ? '' : 'none';
   });
-  var labels = { xtream:'+ Xtream', m3u:'+ M3U', epg:'+ EPG', notes:'+ Appunto', backups:'+ Backup' };
+  var labels = { xtream:'+ Xtream', m3u:'+ M3U', epg:'+ EPG' };
   document.getElementById('btn-add-main').textContent = labels[tab];
   setTimeout(function(){ window.afterRender && window.afterRender(); }, 50);
 }
@@ -699,29 +738,21 @@ function switchTab(tab) {
 function openAddModal() {
   if (currentTab === 'xtream') openXtreamModal();
   else if (currentTab === 'm3u') openM3UModal();
-  else if (currentTab === 'epg') openEPGModal();
-  else if (currentTab === 'notes') openNoteModal();
-  else if (currentTab === 'backups') openBackupModal();
+  else openEPGModal();
 }
 
 /* ══════════════════════════════════════════════════════════
    RENDER
 ══════════════════════════════════════════════════════════ */
 function renderAll() {
-  renderXtream(); renderM3U(); renderEPG(); renderNotes(); renderBackups(); updateCounts();
+  renderXtream(); renderM3U(); renderEPG(); updateCounts();
   setTimeout(function(){ window.afterRender && window.afterRender(); }, 60);
 }
 
 function updateCounts() {
-  try {
-    document.getElementById('tc-xtream').textContent = db.xtream.length;
-    document.getElementById('tc-m3u').textContent    = db.m3u.length;
-    document.getElementById('tc-epg').textContent    = db.epg.length;
-    var elNotes=document.getElementById('tc-notes');
-    var elBackups=document.getElementById('tc-backups');
-    if (elNotes) elNotes.textContent=db.notes.length;
-    if (elBackups) elBackups.textContent=db.backups.length;
-  } catch(e) { console.log('updateCounts error:', e); }
+  document.getElementById('tc-xtream').textContent = db.xtream.length;
+  document.getElementById('tc-m3u').textContent    = db.m3u.length;
+  document.getElementById('tc-epg').textContent    = db.epg.length;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -733,7 +764,7 @@ function renderXtream() {
   var groups = { ok:[], soon:[], unk:[], exp:[] };
   db.xtream.forEach(function(l,i){ var s=xStatus(l); (groups[s]||groups.unk).push([l,i]); });
   var order = [['ok','Attive'],['soon','In scadenza'],['unk','Non verificate'],['exp','Scadute']];
-  var html = '<div class="section-head"><div class="section-label">Liste Xtream ('+db.xtream.length+')</div><button class="btn btn-xs btn-accent" onclick="copyAllXtream()">⎘ Copia tutto</button></div>';
+  var html = '';
   for (var oi=0; oi<order.length; oi++) {
     var k=order[oi][0], lbl=order[oi][1];
     if (!groups[k].length) continue;
@@ -741,12 +772,6 @@ function renderXtream() {
     for (var gi=0; gi<groups[k].length; gi++) html += xtreamCard(groups[k][gi][0], groups[k][gi][1]);
   }
   c.innerHTML = html;
-}
-
-function copyAllXtream() {
-  var lines = db.xtream.map(function(l){ return l.name+':\t'+l.host+'/get.php?username='+encodeURIComponent(l.user)+'&password='+encodeURIComponent(l.pass)+'&type=m3u_plus'; });
-  cp(lines.join('\n'));
-  toast('✓ Copiate '+db.xtream.length+' URL M3U Xtream');
 }
 
 function xStatus(l) {
@@ -787,11 +812,20 @@ function xtreamCard(l, idx) {
     +'<button class="btn btn-xs" onclick="cpCreds('+idx+')">⎘ Cred.</button>'
     +'<button class="btn btn-xs" onclick="cpNativeEpg('+idx+')" title="Copia EPG nativo">⎘ EPG</button>'
     +(epgName?'<button class="btn btn-xs" onclick="cpEpgFromX('+idx+')">⎘ EPG ext.</button>':'')
-    +'<button class="btn btn-xs" onclick="testX('+idx+')" title="Test connessione server">🔍 Test</button>'
+    +'<button class="btn btn-xs" onclick="toggleTest(\'x\','+idx+')" title="Verifica server">📶 Stato</button>'
+    +'<button class="btn btn-xs" onclick="openListEditor(\'x\','+idx+')" title="Modifica come testo">✎ Testo</button>'
     +'<button class="btn btn-xs btn-icon" id="xrefbtn-'+idx+'" onclick="refreshX('+idx+')" title="Ricarica scadenza">🔄</button>'
     +'<button class="btn btn-xs btn-icon" onclick="openXtreamModal('+idx+')" title="Modifica">✏️</button>'
     +'<button class="btn btn-xs btn-icon btn-danger" onclick="delXtream('+idx+')">🗑</button>'
-    +'</div></div>';
+    +'</div>'
+    +'<div class="test-panel" id="xtest-'+idx+'">'
+    +'<div class="test-row">'
+    +'<button class="btn btn-xs" id="xtest-btn-'+idx+'" onclick="checkServer('+idx+')">🔄 Aggiorna</button>'
+    +'<button class="btn btn-xs btn-icon" onclick="toggleTest(\'x\','+idx+')" title="Chiudi">✕</button>'
+    +'</div>'
+    +'<div class="test-result" id="xtest-res-'+idx+'"></div>'
+    +'</div>'
+    +'</div>';
 }
 
 function openXtreamModal(idx) {
@@ -867,66 +901,6 @@ async function refreshX(idx) {
   else toast('⚠ Server non raggiungibile o CORS bloccato');
 }
 
-async function testX(idx) {
-  var l=db.xtream[idx];
-  var btn=event.target;
-  btn.innerHTML='<span class="spin"></span>'; btn.disabled=true;
-  var apiUrl=(l.host.replace(/\/$/,''))+'/player_api.php?username='+encodeURIComponent(l.user)+'&password='+encodeURIComponent(l.pass);
-  var info = { server: '❌ Offline', auth: '❌ No', active: '?', max: '?' };
-  // Tentativo diretto
-  try {
-    var res=await fetch(apiUrl,{signal:AbortSignal.timeout(8000)});
-    if (res.ok) {
-      var data=await res.json();
-      if (data&&data.user_info) {
-        var u=data.user_info;
-        info.server='✅ Online';
-        info.auth=u.auth==1||u.auth=='1'?'✅ OK':'❌ No';
-        info.active=u.active_cons||'0';
-        info.max=u.max_connections||'?';
-        if (parseInt(info.active)>=parseInt(info.max)) info.auth='🔴 OCCUPATO ('+info.active+'/'+info.max+')';
-        else info.auth='🟢 Libero ('+info.active+'/'+info.max+')';
-      }
-    }
-  } catch(e){ /* fallback proxy */ }
-  // Fallback proxy se diretto fallito
-  if (info.server==='❌ Offline') {
-    try {
-      var proxyUrl='https://provetta-addon.hf.space/proxy/stream?url='+encodeURIComponent(apiUrl);
-      var res2=await fetch(proxyUrl,{signal:AbortSignal.timeout(12000)});
-      if (res2.ok) {
-        var data2=await res2.json();
-        info.server='✅ Online (proxy)';
-        if (data2&&data2.user_info) {
-          var u2=data2.user_info;
-          info.auth=u2.auth==1||u2.auth=='1'?'✅ OK':'❌ No';
-          info.active=u2.active_cons||'0';
-          info.max=u2.max_connections||'?';
-          if (parseInt(info.active)>=parseInt(info.max)) info.auth='🔴 OCCUPATO ('+info.active+'/'+info.max+')';
-          else info.auth='🟢 Libero ('+info.active+'/'+info.max+')';
-        }
-      }
-    } catch(e2){}
-  }
-  btn.innerHTML='🔍 Test'; btn.disabled=false;
-  toast(info.server+' | Auth: '+info.auth+' | Connessioni: '+info.active+'/'+info.max);
-}
-
-async function testM3U(idx) {
-  var l=db.m3u[idx];
-  var btn=event.target;
-  btn.innerHTML='<span class="spin"></span>'; btn.disabled=true;
-  try {
-    var res=await fetch(l.url,{method:'HEAD',signal:AbortSignal.timeout(10000)});
-    btn.innerHTML='🔍 Test'; btn.disabled=false;
-    if (res.ok) toast('✅ Raggiungibile · HTTP '+res.status);
-    else toast('⚠ Non raggiungibile · HTTP '+res.status);
-  } catch(e) {
-    btn.innerHTML='🔍 Test'; btn.disabled=false;
-    toast('❌ Offline o irraggiungibile');
-  }
-}
-
 function cpXtream(i){ var l=db.xtream[i]; cp(l.host+'/get.php?username='+l.user+'&password='+l.pass+'&type=m3u_plus&output=ts'); }
 function cpM3Ux(i){ var l=db.xtream[i]; cp(l.host+'/get.php?username='+l.user+'&password='+l.pass+'&type=m3u_plus'); }
 function cpCreds(i){ var l=db.xtream[i]; cp('Host: '+l.host+'\nUsername: '+l.user+'\nPassword: '+l.pass); }
@@ -943,15 +917,7 @@ function cpEpgFromX(i){
 function renderM3U() {
   var c=document.getElementById('content-m3u');
   if (!db.m3u.length) { c.innerHTML=emptyHtml('📋','Nessuna playlist M3U','Aggiungi un link diretto M3U'); return; }
-  var html='<div class="section-head"><div class="section-label">Playlist M3U ('+db.m3u.length+')</div><button class="btn btn-xs btn-accent" onclick="copyAllM3U()">⎘ Copia tutto</button></div>';
-  html+=db.m3u.map(function(l,i){return m3uCard(l,i);}).join('');
-  c.innerHTML=html;
-}
-
-function copyAllM3U() {
-  var lines=db.m3u.map(function(l){ return l.name+':\t'+l.url; });
-  cp(lines.join('\n'));
-  toast('✓ Copiati '+db.m3u.length+' URL M3U');
+  c.innerHTML=db.m3u.map(function(l,i){return m3uCard(l,i);}).join('');
 }
 
 function m3uCard(l,idx) {
@@ -963,12 +929,21 @@ function m3uCard(l,idx) {
     +'</div>'
     +(l.notes?'<div class="note-line">💬 '+esc(l.notes)+'</div>':'')
     +'<div class="card-actions">'
-    +'<button class="btn btn-xs" onclick="testM3U('+idx+')" title="Test raggiungibilità playlist">🔍 Test</button>'
     +'<button class="btn btn-xs" onclick="cpM3UUrl('+idx+')">⎘ URL M3U</button>'
     +(epgObj?'<button class="btn btn-xs" onclick="cpEpgFromM3U('+idx+')">⎘ EPG URL</button>':'')
     +'<button class="btn btn-xs btn-icon" onclick="openM3UModal('+idx+')" title="Modifica">✏️</button>'
+    +'<button class="btn btn-xs" onclick="toggleTest(\'m\','+idx+')" title="Verifica server">📶 Stato</button>'
+    +'<button class="btn btn-xs" onclick="openListEditor(\'m\','+idx+')" title="Modifica come testo">✎ Testo</button>'
     +'<button class="btn btn-xs btn-icon btn-danger" onclick="delM3U('+idx+')">🗑</button>'
-    +'</div></div>';
+    +'</div>'
+    +'<div class="test-panel" id="mtest-'+idx+'">'
+    +'<div class="test-row">'
+    +'<button class="btn btn-xs" id="mtest-btn-'+idx+'" onclick="checkServerM3U('+idx+')">🔄 Aggiorna</button>'
+    +'<button class="btn btn-xs btn-icon" onclick="toggleTest(\'m\','+idx+')" title="Chiudi">✕</button>'
+    +'</div>'
+    +'<div class="test-result" id="mtest-res-'+idx+'"></div>'
+    +'</div>'
+    +'</div>';
 }
 
 function openM3UModal(idx) {
@@ -1009,15 +984,9 @@ function cpEpgFromM3U(i){
 function renderEPG() {
   var c=document.getElementById('content-epg');
   if (!db.epg.length) { c.innerHTML=emptyHtml('📡','Nessuna sorgente EPG','Aggiungi un URL xmltv per la guida TV'); return; }
-  var html='<div class="section-head"><div class="section-label">Sorgenti EPG ('+db.epg.length+')</div><button class="btn btn-xs btn-accent" onclick="copyAllEPG()">⎘ Copia tutto</button></div>';
+  var html='<div class="section-head"><div class="section-label">Sorgenti EPG ('+db.epg.length+')</div></div>';
   html+=db.epg.map(function(e,i){return epgCard(e,i);}).join('');
   c.innerHTML=html;
-}
-
-function copyAllEPG() {
-  var lines=db.epg.map(function(e){ return e.name+':\t'+e.url; });
-  cp(lines.join('\n'));
-  toast('✓ Copiati '+db.epg.length+' URL EPG');
 }
 
 function epgCard(e,idx) {
@@ -1070,151 +1039,6 @@ function delEPG(idx) {
 function cpEpg(i){ cp(db.epg[i].url); }
 
 /* ══════════════════════════════════════════════════════════
-   NOTES (Appunti)
-══════════════════════════════════════════════════════════ */
-function renderNotes() {
-  try {
-    var c=document.getElementById('content-notes');
-    if (!c) return;
-    if (!db.notes.length) { c.innerHTML=emptyHtml('📝','Nessun appunto','Aggiungi note, link o testo da ricordare'); return; }
-    var html='<div class="section-head"><div class="section-label">Appunti ('+db.notes.length+')</div></div>';
-    html+=db.notes.map(function(n,i){return noteCard(n,i);}).join('');
-    c.innerHTML=html;
-  } catch(e) { console.log('renderNotes error:', e); }
-}
-function noteCard(n,idx) {
-  return '<div class="card">'
-    +'<div class="card-top"><div class="card-name">'+esc(n.name)+' <span class="badge b-unk">NOTE</span></div></div>'
-    +'<div class="note-line" style="margin-bottom:10px;font-size:12px;white-space:pre-wrap;word-break:break-word;color:var(--text);font-family:var(--mono);line-height:1.6">'+esc(n.text)+'</div>'
-    +'<div class="card-actions">'
-    +'<button class="btn btn-xs" onclick="cpNote('+idx+')">⎘ Copia testo</button>'
-    +'<button class="btn btn-xs btn-icon" onclick="openNoteModal('+idx+')" title="Modifica">✏️</button>'
-    +'<button class="btn btn-xs btn-icon btn-danger" onclick="delNote('+idx+')">🗑</button>'
-    +'</div></div>';
-}
-function openNoteModal(idx) {
-  editMode.notes = idx!==undefined?idx:null;
-  var n=editMode.notes!==null?db.notes[editMode.notes]:{};
-  document.getElementById('mn-title').textContent=editMode.notes!==null?'Modifica appunto':'Nuovo appunto';
-  document.getElementById('mn-name').value=n.name||'';
-  document.getElementById('mn-text').value=n.text||'';
-  openModal('modal-note');
-}
-function saveNote() {
-  try {
-    var name=document.getElementById('mn-name').value.trim();
-    var text=document.getElementById('mn-text').value.trim();
-    if (!name) { alert('Inserisci un titolo per l\'appunto.'); return; }
-    var entry={id:editMode.notes!==null?db.notes[editMode.notes].id:uid(), name, text};
-    if (editMode.notes!==null) db.notes[editMode.notes]=entry; else db.notes.push(entry);
-    closeModal('modal-note'); commit(); renderAll(); toast('✓ Appunto salvato');
-  } catch(e) { alert('Errore: '+e.message); }
-}
-function delNote(idx) {
-  if (!confirm('Eliminare questo appunto?')) return;
-  db.notes.splice(idx,1); commit(); renderAll();
-}
-function cpNote(i){ cp(db.notes[i].text); }
-
-/* ══════════════════════════════════════════════════════════
-   BACKUPS
-══════════════════════════════════════════════════════════ */
-function renderBackups() {
-  try {
-    var c=document.getElementById('content-backups');
-    if (!c) return;
-    if (!db.backups.length) { c.innerHTML=emptyHtml('💾','Nessun backup','Carica backup di Sparkle TV, Tivimate, ecc.'); return; }
-    var html='<div class="section-head"><div class="section-label">Backup ('+db.backups.length+')</div></div>';
-    html+=db.backups.map(function(b,i){return backupCard(b,i);}).join('');
-    c.innerHTML=html;
-  } catch(e) { console.log('renderBackups error:', e); }
-}
-function backupCard(b,idx) {
-  var sz=b.size?formatBytes(b.size):'';
-  return '<div class="card">'
-    +'<div class="card-top"><div class="card-name">'+esc(b.name)+' <span class="badge b-epg">BACKUP</span></div>'
-    +(sz?'<div class="card-meta">'+sz+'</div>':'')
-    +'</div>'
-    +(b.fileName?'<div class="fields"><span class="fl">file</span><span class="fv fv-url">'+esc(b.fileName)+'</span></div>':'')
-    +'<div class="card-actions">'
-    +'<button class="btn btn-xs btn-accent" onclick="downloadBackup('+idx+')">↓ Scarica</button>'
-    +'<button class="btn btn-xs btn-icon btn-danger" onclick="delBackup('+idx+')">🗑</button>'
-    +'</div></div>';
-}
-function openBackupModal() {
-  editMode.backups=null;
-  document.getElementById('mb-title').textContent='Carica backup';
-  document.getElementById('mb-name').value='';
-  document.getElementById('mb-file').value='';
-  openModal('modal-backup');
-}
-function saveBackup() {
-  var name=document.getElementById('mb-name').value.trim();
-  var fileInput=document.getElementById('mb-file');
-  if (!name) { alert('Inserisci un nome per il backup.'); return; }
-  if (!fileInput.files||!fileInput.files[0]) { alert('Seleziona un file da caricare.'); return; }
-  var file=fileInput.files[0];
-  if (file.size>5242880) { alert('File troppo grande (>5MB). Il limite è 5MB per evitare di appesantire il file HTML.'); return; }
-  var btn=document.querySelector('#modal-backup .btn-accent');
-  btn.innerHTML='<span class="spin"></span> Caricamento…'; btn.disabled=true;
-  var reader=new FileReader();
-  reader.onload=function(e) {
-    var data=e.target.result;
-    var entry={id:uid(), name:name, fileName:file.name, size:file.size, type:file.type||'', data:data};
-    db.backups.push(entry);
-    btn.innerHTML='Carica'; btn.disabled=false;
-    closeModal('modal-backup'); commit(); renderAll(); toast('✓ Backup caricato: '+file.name);
-  };
-  reader.onerror=function() {
-    btn.innerHTML='Carica'; btn.disabled=false;
-    alert('Errore nella lettura del file.');
-  };
-  reader.readAsDataURL(file);
-}
-function delBackup(idx) {
-  if (!confirm('Eliminare questo backup?')) return;
-  db.backups.splice(idx,1); commit(); renderAll();
-}
-function downloadBackup(idx) {
-  var b=db.backups[idx];
-  if (!b.data) { toast('⚠ Dati backup non trovati'); return; }
-  try {
-    var parts=b.data.split(',');
-    var mime=(parts[0].match(/:(.*?);/)||[])[1]||'application/octet-stream';
-    var base64=parts[1];
-    // Capacitor Filesystem (Android APK)
-    if (typeof Capacitor!=='undefined'&&Capacitor.isNativePlatform()&&Capacitor.Plugins&&Capacitor.Plugins.Filesystem) {
-      Capacitor.Plugins.Filesystem.writeFile({
-        path: b.fileName||'backup',
-        data: base64,
-        directory: 'DOCUMENTS'
-      }).then(function(){toast('✓ Salvato in Download');}).catch(function(e){toast('⚠ Errore: '+e.message);});
-      return;
-    }
-    // Browser: blob + anchor click
-    var raw=atob(base64);
-    var u8=new Uint8Array(raw.length);
-    for (var i=0;i<raw.length;i++) u8[i]=raw.charCodeAt(i);
-    var blob=new Blob([u8],{type:mime});
-    var url=URL.createObjectURL(blob);
-    var a=document.createElement('a');
-    a.href=url; a.download=b.fileName||'backup';
-    a.target='_blank';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
-    toast('↓ Download: '+b.fileName);
-  } catch(e) {
-    toast('⚠ Errore download: '+e.message);
-  }
-}
-function formatBytes(bytes) {
-  if (bytes<1024) return bytes+' B';
-  if (bytes<1048576) return (bytes/1024).toFixed(1)+' KB';
-  return (bytes/1048576).toFixed(1)+' MB';
-}
-
-/* ══════════════════════════════════════════════════════════
    HELPERS
 ══════════════════════════════════════════════════════════ */
 function populateEpgSelect(selId, currentVal) {
@@ -1228,47 +1052,23 @@ function populateEpgSelect(selId, currentVal) {
   });
 }
 
-async function fetchExpiry(host,user,pass) {
-  var apiUrl=(host.replace(/\/$/,''))+'/player_api.php?username='+encodeURIComponent(user)+'&password='+encodeURIComponent(pass);
-
-  // Tentativo 1: fetch diretto (browser desktop/mobile)
-  try {
-    var res=await fetch(apiUrl,{signal:AbortSignal.timeout(8000)});
-    if (res.ok) {
-      var data=await res.json();
-      var ts=data&&data.user_info&&data.user_info.exp_date;
-      if (ts){ var d=new Date(parseInt(ts)*1000); if(!isNaN(d)) return d.toISOString().split('T')[0]; }
-    }
-  } catch(e){ /* CORS/WebView — prova proxy */ }
-
-  // Tentativo 2: proxy via HF Space (aggira CORS su APK/WebView)
-  try {
-    var proxyUrl='https://provetta-addon.hf.space/proxy/stream?url='+encodeURIComponent(apiUrl);
-    var res2=await fetch(proxyUrl,{signal:AbortSignal.timeout(12000)});
-    if (res2.ok) {
-      var data2=await res2.json();
-      var ts2=data2&&data2.user_info&&data2.user_info.exp_date;
-      if (ts2){ var d2=new Date(parseInt(ts2)*1000); if(!isNaN(d2)) return d2.toISOString().split('T')[0]; }
-    }
-  } catch(e2){ /* proxy fallito */ }
-
-  return null;
-}
-
+/* ── UTILS ── */
+function uid(){ return Math.random().toString(36).substring(2,10); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function emptyHtml(icon,title,sub){ return '<div class="empty"><div class="empty-icon">'+icon+'</div><p>'+title+'</p><small>'+sub+'</small></div>'; }
 function openModal(id){ document.getElementById(id).classList.add('open'); }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 
-function emptyHtml(icon,title,sub){
-  return '<div class="empty"><div class="empty-icon">'+icon+'</div><p>'+title+'</p><small>'+sub+'</small></div>';
+var _tt;
+function toast(msg){
+  var el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(_tt); _tt=setTimeout(function(){el.classList.remove('show');},2800);
 }
 
-function uid(){ return Math.random().toString(36).substring(2,10); }
-
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
 function cp(txt){
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(txt).then(function(){toast('✓ Copiato!');}).catch(function(){ cpFallback(txt); });
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(function(){toast('✓ Copiato!');}).catch(function(){cpFallback(txt);});
   } else { cpFallback(txt); }
 }
 function cpFallback(txt){
@@ -1279,34 +1079,289 @@ function cpFallback(txt){
   document.body.removeChild(ta);
 }
 
-var _tt;
-function toast(msg){
-  var el=document.getElementById('toast');
-  el.textContent=msg; el.classList.add('show');
-  clearTimeout(_tt); _tt=setTimeout(function(){el.classList.remove('show');},2800);
-}
-
-/* ══════════════════════════════════════════════════════════
-   SELF-SAVE
-══════════════════════════════════════════════════════════ */
+/* ── SELF-SAVE ── */
 function getUpdatedHtml(){
-  var json=JSON.stringify(db,null,2);
+  // JSON incorporato dentro <script>: escape di '<' per evitare che
+  // un valore utente contenente la sequenza di chiusura dello script chiuda accidentalmente lo script.
+  var json=JSON.stringify(db,null,2)
+    .replace(/</g,'\\u003c')
+    .replace(/>/g,'\\u003e')
+    .replace(/\\u2028/g,'\\\\u2028')
+    .replace(/\\u2029/g,'\\\\u2029');
   return document.documentElement.outerHTML.replace(
     /\/\/ IPTV_DATA_START[\s\S]*?\/\/ IPTV_DATA_END/,
-    '// IPTV_DATA_START\nvar SAVED = '+json+';\n// IPTV_DATA_END'
+    '// IPTV_DATA_START\\nvar SAVED = '+json+';\\n// IPTV_DATA_END'
   );
 }
-
 function commit(){
   SAVED=JSON.parse(JSON.stringify(db));
-  if (gistToken&&gistId) gistPush(true);
+  if(gistToken&&gistId) gistPush(true);
 }
-
 function downloadSelf(){
   var blob=new Blob([getUpdatedHtml()],{type:'text/html'});
   var a=document.createElement('a');
-  a.href=URL.createObjectURL(blob); a.download='iptv-manager.html'; a.click();
+  var url=URL.createObjectURL(blob);
+  a.href=url; a.download='iptv-manager.html'; a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); },1000);
   toast('✓ File scaricato');
+}
+
+
+/* ── FETCH EXPIRY ── */
+async function fetchExpiry(host,user,pass){
+  var apiUrl=(host.replace(/\/$/,''))+'/player_api.php?username='+encodeURIComponent(user)+'&password='+encodeURIComponent(pass);
+  try{
+    var res=await fetch(apiUrl,{signal:AbortSignal.timeout(8000)});
+    if(res.ok){
+      var data=await res.json();
+      var ts=data&&data.user_info&&data.user_info.exp_date;
+      if(ts){ var d=new Date(parseInt(ts)*1000); if(!isNaN(d)) return d.toISOString().split('T')[0]; }
+    }
+  }catch(e){}
+  return null;
+}
+
+/* ── EDITOR TAB SWITCH ── */
+function switchEditorTab(tab){
+  document.getElementById('etab-data').classList.toggle('active',tab==='data');
+  document.getElementById('etab-m3u').classList.toggle('active',tab==='m3u');
+  document.getElementById('epanel-data').style.display=tab==='data'?'':'none';
+  document.getElementById('epanel-m3u').style.display=tab==='m3u'?'':'none';
+}
+
+/* ── LOAD / DOWNLOAD M3U TEXT ── */
+async function loadM3UText(){
+  var type=_listEditorType, idx=_listEditorIdx;
+  var item=type==='x'?db.xtream[idx]:db.m3u[idx];
+  if(!item) return;
+  var m3uUrl=type==='x'
+    ?(item.host.replace(/\/$/,'')+'/get.php?username='+encodeURIComponent(item.user)+'&password='+encodeURIComponent(item.pass)+'&type=m3u_plus')
+    :item.url;
+  var infoEl=document.getElementById('m3u-info');
+  var errEl=document.getElementById('m3u-error');
+  var ta=document.getElementById('m3u-editor');
+  var loadEl=document.getElementById('m3u-loading');
+  var btn=document.getElementById('btn-load-m3u');
+  infoEl.textContent='Download in corso…'; errEl.textContent='';
+  ta.style.display='none'; loadEl.style.display='flex'; btn.disabled=true;
+  var text=null;
+  try{ var r=await fetch(m3uUrl,{signal:AbortSignal.timeout(20000)}); if(r.ok) text=await r.text(); }catch(e){}
+  if(text&&!text.trim().startsWith('#EXTM3U')&&text.trim().startsWith('<')) text=null;
+  loadEl.style.display='none'; ta.style.display=''; btn.disabled=false;
+  if(text){
+    ta.value=text;
+    var ch=(text.match(/#EXTINF/g)||[]).length;
+    infoEl.textContent=ch+' canali · '+Math.round(text.length/1024)+' KB';
+    errEl.textContent='';
+  } else {
+    infoEl.textContent='Download fallito';
+    errEl.textContent='⚠ Impossibile scaricare. URL: '+m3uUrl;
+  }
+}
+
+function downloadM3UText(){
+  var text=document.getElementById('m3u-editor').value;
+  if(!text.trim()){toast('⚠ Carica prima la playlist');return;}
+  var type=_listEditorType, idx=_listEditorIdx;
+  var item=type==='x'?db.xtream[idx]:db.m3u[idx];
+  var name=((item&&item.name)?item.name:'playlist').replace(/[^a-z0-9]/gi,'_').toLowerCase();
+  var blob=new Blob([text],{type:'audio/x-mpegurl'});
+  var a=document.createElement('a');
+  var url=URL.createObjectURL(blob);
+  a.href=url; a.download=name+'.m3u'; a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); },1000);
+  toast('✓ '+name+'.m3u scaricato');
+}
+
+/* ══════════════════════════════════════════════════════════
+   TEST SERVER
+══════════════════════════════════════════════════════════ */
+function toggleTest(type, idx) {
+  var panel = document.getElementById((type==='x'?'xtest':'mtest')+'-'+idx);
+  if (!panel) return;
+  var wasOpen = panel.classList.contains('open');
+  panel.classList.toggle('open');
+  if (!wasOpen) setTimeout(function(){ testServer(type, idx); }, 80);
+}
+
+async function testServer(type, idx) {
+  var prefix = type==='x' ? 'xtest' : 'mtest';
+  var res = document.getElementById(prefix+'-res-'+idx);
+  var btn = document.getElementById(prefix+'-btn-'+idx);
+  if (!res) return;
+  res.className = 'test-result testing';
+  res.innerHTML = '<span class="spin"></span> Test in corso…';
+  if (btn) btn.disabled = true;
+
+  var data = null;
+
+  if (type === 'x') {
+    var item = db.xtream[idx];
+    if (!item) return;
+    var apiUrl = item.host.replace(/\/$/,'') + '/player_api.php?username=' + encodeURIComponent(item.user) + '&password=' + encodeURIComponent(item.pass);
+    try {
+      var r = await fetch(apiUrl, { signal: AbortSignal.timeout(9000) });
+      if (r.ok) data = await r.json();
+    } catch(e) {}
+    if (!data) {
+      try {
+        var pu = getProxyUrl(apiUrl);
+        if (pu) { var r2 = await fetch(pu, { signal: AbortSignal.timeout(12000) }); if (r2.ok) data = await r2.json(); }
+      } catch(e) {}
+    }
+    if (btn) btn.disabled = false;
+    if (!data) {
+      res.className = 'test-result offline';
+      res.innerHTML = '❌ Server non raggiungibile';
+      return;
+    }
+    var ui = data.user_info || {};
+    var si = data.server_info || {};
+    var auth = ui.auth;
+    var active = parseInt(ui.active_cons) || 0;
+    var maxc   = parseInt(ui.max_connections) || 0;
+    var expTs  = ui.exp_date ? new Date(parseInt(ui.exp_date)*1000) : null;
+    var expStr = expTs ? expTs.toLocaleDateString('it-IT') : 'N/D';
+    var status = ui.status || '';
+    if (!auth || status.toLowerCase() === 'disabled') {
+      res.className = 'test-result offline';
+      res.innerHTML = '❌ Credenziali non valide o account disabilitato';
+      return;
+    }
+    var full = maxc > 0 && active >= maxc;
+    var connColor = full ? 'var(--red)' : active > 0 ? 'var(--orange)' : 'var(--accent)';
+    res.className = 'test-result online';
+    res.innerHTML =
+      '✅ Server <b>ONLINE</b><br>' +
+      '<span style="color:var(--muted2)">Connessioni: </span><span style="color:'+connColor+'">' + active + ' / ' + maxc + '</span><br>' +
+      '<span style="color:var(--muted2)">Scadenza: </span>' + expStr +
+      (si.url ? '<br><span style="color:var(--muted2)">Server: </span>' + esc(si.url) + (si.port ? ':'+si.port : '') : '') +
+      (full ? '<br><span style="color:var(--red)">⚠ Connessioni esaurite</span>' : '');
+  } else {
+    var item = db.m3u[idx];
+    if (!item) return;
+    var ok = false;
+    try {
+      var rm = await fetch(item.url, {
+        method:'GET',
+        headers:{'Range':'bytes=0-1023'},
+        signal: AbortSignal.timeout(9000)
+      });
+      ok = rm.status >= 200 && rm.status < 500;
+    } catch(e) {}
+
+    if (btn) btn.disabled = false;
+    res.className = ok ? 'test-result online' : 'test-result offline';
+    res.innerHTML = ok ? '✅ Server <b>ONLINE</b> — playlist raggiungibile' : '❌ Server non raggiungibile';
+  }
+}
+
+function checkServer(idx)    { testServer('x', idx); }
+function checkServerM3U(idx) { testServer('m', idx); }
+
+/* ══════════════════════════════════════════════════════════
+   EDITOR SINGOLA LISTA
+══════════════════════════════════════════════════════════ */
+var _listEditorType = null;
+var _listEditorIdx  = null;
+
+function openListEditor(type, idx) {
+  _listEditorType = type;
+  _listEditorIdx  = idx;
+  var item = type==='x' ? db.xtream[idx] : type==='m' ? db.m3u[idx] : db.epg[idx];
+  if (!item) return;
+  var ta = document.getElementById('raw-editor');
+  var errEl = document.getElementById('editor-error');
+  ta.value = JSON.stringify(item, null, 2);
+  errEl.textContent = '';
+  var typeLabel = type==='x' ? 'Xtream' : type==='m' ? 'M3U' : 'EPG';
+  document.getElementById('editor-title').textContent = '✏ ' + esc(item.name||item.url||'');
+  document.getElementById('editor-info').textContent = 'Modifica ' + typeLabel + ': ' + esc(item.name||item.url||'');
+  ta.dataset.mode = 'single';
+  // Reset M3U tab
+  document.getElementById('m3u-editor').value = '';
+  document.getElementById('m3u-error').textContent = '';
+  document.getElementById('m3u-info').textContent = 'Premi "Carica playlist" per scaricare i canali dal server';
+  // Mostra tab M3U solo per Xtream e M3U, non EPG
+  document.getElementById('etab-m3u').style.display = type==='e' ? 'none' : '';
+  switchEditorTab('data');
+  openModal('modal-editor');
+  setTimeout(function(){ ta.focus(); }, 150);
+}
+
+/* ══════════════════════════════════════════════════════════
+   EDITOR RAW
+══════════════════════════════════════════════════════════ */
+function openEditor() {
+  var json = JSON.stringify(db, null, 2);
+  document.getElementById('raw-editor').value = json;
+  document.getElementById('raw-editor').dataset.mode = 'full';
+  document.getElementById('editor-error').textContent = '';
+  var total = db.xtream.length + db.m3u.length + db.epg.length;
+  document.getElementById('editor-title').textContent = '✏ Editor dati completo';
+  document.getElementById('editor-info').textContent =
+    db.xtream.length + ' Xtream · ' + db.m3u.length + ' M3U · ' + db.epg.length + ' EPG — ' + total + ' elementi totali';
+  document.getElementById('etab-m3u').style.display = 'none';
+  switchEditorTab('data');
+  openModal('modal-editor');
+  setTimeout(function(){ document.getElementById('raw-editor').focus(); }, 150);
+}
+
+function editorFormat() {
+  var ta = document.getElementById('raw-editor');
+  var errEl = document.getElementById('editor-error');
+  try {
+    var parsed = JSON.parse(ta.value);
+    ta.value = JSON.stringify(parsed, null, 2);
+    errEl.textContent = '';
+  } catch(e) {
+    errEl.textContent = '⚠ JSON non valido: ' + e.message;
+  }
+}
+
+function editorSelectAll(targetId) {
+  var ta = document.getElementById(targetId||'raw-editor');
+  ta.focus(); ta.select();
+}
+
+function saveEditor() {
+  var ta = document.getElementById('raw-editor');
+  var errEl = document.getElementById('editor-error');
+  var text = ta.value.trim();
+  var mode = ta.dataset.mode;
+  try {
+    var parsed = JSON.parse(text);
+    if (mode === 'single') {
+      // Salva solo la singola voce
+      if (!parsed.id) parsed.id = uid();
+      var type = _listEditorType;
+      var idx  = _listEditorIdx;
+      if (type === 'x') db.xtream[idx] = parsed;
+      else if (type === 'm') db.m3u[idx] = parsed;
+      else db.epg[idx] = parsed;
+      errEl.textContent = '';
+      closeModal('modal-editor');
+      commit(); renderAll();
+      toast('✓ Lista aggiornata');
+    } else {
+      // Salva tutto il db
+      var newDb;
+      if (parsed.xtream !== undefined || parsed.m3u !== undefined || parsed.epg !== undefined) {
+        newDb = normalizeDb(parsed);
+      } else if (Array.isArray(parsed)) {
+        newDb = normalizeDb({ xtream: parsed, m3u: db.m3u, epg: db.epg });
+      } else {
+        throw new Error('Formato non riconosciuto. Usa {xtream:[...], m3u:[...], epg:[...]}');
+      }
+      db = newDb;
+      errEl.textContent = '';
+      closeModal('modal-editor');
+      commit(); renderAll();
+      toast('✓ Dati salvati — ' + (db.xtream.length+db.m3u.length+db.epg.length) + ' elementi');
+    }
+  } catch(e) {
+    errEl.textContent = '⚠ JSON non valido: ' + e.message;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1314,120 +1369,131 @@ function downloadSelf(){
 ══════════════════════════════════════════════════════════ */
 var GIST_FILENAME = 'iptv-data.json';
 
-function openGistSetup(){
-  document.getElementById('g-token').value=gistToken;
-  document.getElementById('g-id').value=gistId;
+function openGistSetup() {
+  document.getElementById('g-token').value = gistToken;
+  document.getElementById('g-id').value = gistId;
   openModal('modal-gist');
 }
 
-async function connectGist(){
-  var token=document.getElementById('g-token').value.trim();
-  var id=document.getElementById('g-id').value.trim();
-  if (!token) { alert('Inserisci il token GitHub.'); return; }
-  var btn=document.getElementById('gist-conn-btn');
-  btn.innerHTML='<span class="spin"></span> Connessione…'; btn.disabled=true;
-  try {
-    var hdrs={Authorization:'Bearer '+token,'X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'};
-    if (id) {
-      var r=await fetch('https://api.github.com/gists/'+id,{headers:hdrs});
-      if (!r.ok) throw new Error('Gist non trovato ('+r.status+'). Controlla ID e scope "gist" del token.');
-      var gdata=await r.json();
-      var files=Object.keys(gdata.files);
-      var jsonFile=files.filter(function(f){return f.endsWith('.json');})[0];
-      if (!jsonFile) throw new Error('Gist trovato ma senza file .json. File presenti: '+(files.join(', ')||'nessuno'));
-      gistToken=token; gistId=id;
-      localStorage.setItem('iptv_gh_token',gistToken); localStorage.setItem('iptv_gist_id',gistId);
-      closeModal('modal-gist'); btn.innerHTML='Connetti'; btn.disabled=false; updateGistBar();
-      await gistPull();
-    } else {
-      var rc=await fetch('https://api.github.com/gists',{method:'POST',headers:hdrs,
-        body:JSON.stringify({description:'IPTV Manager — Sparkle TV',public:false,
-          files:{[GIST_FILENAME]:{content:JSON.stringify(db,null,2)}}})});
-      if (!rc.ok) throw new Error('Errore creazione Gist: '+rc.status);
-      var dcr=await rc.json();
-      gistToken=token; gistId=dcr.id;
-      localStorage.setItem('iptv_gh_token',gistToken); localStorage.setItem('iptv_gist_id',gistId);
-      closeModal('modal-gist'); updateGistBar(); btn.innerHTML='Connetti'; btn.disabled=false;
-      setGistStatus('ok','Nuovo Gist creato'); toast('✓ Gist creato! ID: '+gistId);
-    }
-  } catch(e){ btn.innerHTML='Connetti'; btn.disabled=false; alert('Errore: '+e.message); }
+function updateGistBar() {
+  var bar = document.getElementById('gist-bar');
+  if (gistToken && gistId) {
+    bar.style.display = 'flex';
+    document.getElementById('gist-label').textContent = 'GitHub Gist — Cloud Sync attivo';
+    setGistStatus('ok', 'ID: ' + gistId.substring(0,18) + '…');
+  } else {
+    bar.style.display = 'none';
+  }
 }
 
-function disconnectGist(){
+function setGistStatus(state, sub) {
+  var dot = document.getElementById('gist-dot');
+  dot.className = 'gist-dot' + (state==='ok' ? ' ok' : state==='syncing' ? ' syncing' : '');
+  document.getElementById('gist-sub').textContent = sub || gistId;
+}
+
+async function connectGist() {
+  var token = document.getElementById('g-token').value.trim();
+  var id    = document.getElementById('g-id').value.trim();
+  if (!token) { alert('Inserisci il token GitHub.'); return; }
+  var btn = document.getElementById('gist-conn-btn');
+  btn.innerHTML = '<span class="spin"></span> Connessione…'; btn.disabled = true;
+  try {
+    var hdrs = { Authorization: 'Bearer ' + token, 'X-GitHub-Api-Version': '2022-11-28', 'Content-Type': 'application/json' };
+    if (id) {
+      var r = await fetch('https://api.github.com/gists/' + id, { headers: hdrs });
+      if (!r.ok) throw new Error('Gist non trovato (' + r.status + '). Controlla ID e scope "gist" del token.');
+      var gdata = await r.json();
+      var files = Object.keys(gdata.files);
+      var jsonFile = files.filter(function(f){ return f.endsWith('.json'); })[0];
+      if (!jsonFile) throw new Error('Gist trovato ma senza file .json. File presenti: ' + (files.join(', ') || 'nessuno'));
+      gistToken = token; gistId = id;
+      localStorage.setItem('iptv_gh_token', gistToken);
+      localStorage.setItem('iptv_gist_id',  gistId);
+      closeModal('modal-gist'); btn.innerHTML = 'Connetti'; btn.disabled = false;
+      updateGistBar();
+      await gistPull(false);
+    } else {
+      var rc = await fetch('https://api.github.com/gists', { method: 'POST', headers: hdrs,
+        body: JSON.stringify({ description: 'IPTV Manager — Sparkle TV', public: false,
+          files: { [GIST_FILENAME]: { content: JSON.stringify(db, null, 2) } } }) });
+      if (!rc.ok) throw new Error('Errore creazione Gist: ' + rc.status);
+      var dcr = await rc.json();
+      gistToken = token; gistId = dcr.id;
+      localStorage.setItem('iptv_gh_token', gistToken);
+      localStorage.setItem('iptv_gist_id',  gistId);
+      closeModal('modal-gist'); updateGistBar();
+      btn.innerHTML = 'Connetti'; btn.disabled = false;
+      setGistStatus('ok', 'Nuovo Gist creato');
+      toast('✓ Gist creato! ID: ' + gistId);
+    }
+  } catch(e) { btn.innerHTML = 'Connetti'; btn.disabled = false; alert('Errore: ' + e.message); }
+}
+
+function disconnectGist() {
   if (!confirm('Disconnettere Cloud Sync?')) return;
-  gistToken=''; gistId='';
-  localStorage.removeItem('iptv_gh_token'); localStorage.removeItem('iptv_gist_id');
+  gistToken = ''; gistId = '';
+  localStorage.removeItem('iptv_gh_token');
+  localStorage.removeItem('iptv_gist_id');
   updateGistBar(); toast('Cloud Sync disconnesso');
 }
 
-async function gistPush(silent){
-  if (!gistToken||!gistId) return;
-  setGistStatus('syncing','Caricamento…');
+async function gistPush(silent) {
+  if (!gistToken || !gistId) return;
+  setGistStatus('syncing', 'Caricamento…');
   try {
-    var rg=await fetch('https://api.github.com/gists/'+gistId,{headers:{Authorization:'Bearer '+gistToken,'X-GitHub-Api-Version':'2022-11-28'}});
-    if (!rg.ok) throw new Error('Gist non accessibile: '+rg.status);
-    var gd=await rg.json();
-    var ef=Object.keys(gd.files).filter(function(f){return f.endsWith('.json');})[0]||GIST_FILENAME;
-    var fp={}; fp[ef]={content:JSON.stringify(db,null,2)};
-    var rp=await fetch('https://api.github.com/gists/'+gistId,{method:'PATCH',
-      headers:{Authorization:'Bearer '+gistToken,'Content-Type':'application/json','X-GitHub-Api-Version':'2022-11-28'},
-      body:JSON.stringify({files:fp})});
-    if (!rp.ok) throw new Error('Push fallito: '+rp.status);
-    setGistStatus('ok','Sincronizzato · '+new Date().toLocaleTimeString('it-IT'));
+    var rg = await fetch('https://api.github.com/gists/' + gistId, {
+      headers: { Authorization: 'Bearer ' + gistToken, 'X-GitHub-Api-Version': '2022-11-28' }
+    });
+    if (!rg.ok) throw new Error('Gist non accessibile: ' + rg.status);
+    var gd = await rg.json();
+    var ef = Object.keys(gd.files).filter(function(f){ return f.endsWith('.json'); })[0] || GIST_FILENAME;
+    var fp = {}; fp[ef] = { content: JSON.stringify(db, null, 2) };
+    var rp = await fetch('https://api.github.com/gists/' + gistId, { method: 'PATCH',
+      headers: { Authorization: 'Bearer ' + gistToken, 'Content-Type': 'application/json', 'X-GitHub-Api-Version': '2022-11-28' },
+      body: JSON.stringify({ files: fp }) });
+    if (!rp.ok) throw new Error('Push fallito: ' + rp.status);
+    setGistStatus('ok', 'Sincronizzato · ' + new Date().toLocaleTimeString('it-IT'));
     if (!silent) toast('✓ Caricato su Gist');
-  } catch(e){ setGistStatus('err','Errore'); if (!silent) toast('⚠ Push: '+e.message); }
+  } catch(e) { setGistStatus('err', 'Errore'); if (!silent) toast('⚠ Push: ' + e.message); }
 }
 
-async function gistPull(silent){
-  if (!gistToken||!gistId) return;
-  setGistStatus('syncing','Scaricamento…');
+async function gistPull(silent) {
+  if (!gistToken || !gistId) return;
+  setGistStatus('syncing', 'Scaricamento…');
   try {
-    var r=await fetch('https://api.github.com/gists/'+gistId,{headers:{Authorization:'Bearer '+gistToken,'X-GitHub-Api-Version':'2022-11-28'}});
-    if (!r.ok) throw new Error('Gist non accessibile: '+r.status);
-    var data=await r.json();
-    var fe=Object.values(data.files).filter(function(f){return f.filename.endsWith('.json');})[0];
+    var r = await fetch('https://api.github.com/gists/' + gistId, {
+      headers: { Authorization: 'Bearer ' + gistToken, 'X-GitHub-Api-Version': '2022-11-28' }
+    });
+    if (!r.ok) throw new Error('Gist non accessibile: ' + r.status);
+    var data = await r.json();
+    var fe = Object.values(data.files).filter(function(f){ return f.filename.endsWith('.json'); })[0];
     if (!fe) throw new Error('Nessun file JSON nel Gist');
-    var content=fe.content;
-    if (fe.truncated){
-      var rr=await fetch(fe.raw_url,{headers:{Authorization:'Bearer '+gistToken}});
-      if (!rr.ok) throw new Error('Errore raw: '+rr.status);
-      content=await rr.text();
+    var content = fe.content;
+    if (fe.truncated) {
+      var rr = await fetch(fe.raw_url, { headers: { Authorization: 'Bearer ' + gistToken } });
+      if (!rr.ok) throw new Error('Errore raw: ' + rr.status);
+      content = await rr.text();
     }
-    if (!content||!content.trim()) throw new Error('File vuoto nel Gist');
-    var parsed=JSON.parse(content);
-    if (parsed.xtream!==undefined||parsed.m3u!==undefined||parsed.epg!==undefined){
-      db=Object.assign({xtream:[],m3u:[],epg:[],notes:[],backups:[]},parsed);
-    } else if (Array.isArray(parsed.lists)){
-      db={xtream:parsed.lists,m3u:[],epg:[],notes:[],backups:[]};
-      toast('⚠ Formato vecchio convertito. Premi ↑ Carica per aggiornare il Gist.');
-    } else if (Array.isArray(parsed)){
-      db={xtream:parsed,m3u:[],epg:[],notes:[],backups:[]};
-      toast('⚠ Formato vecchio convertito.');
+    if (!content || !content.trim()) throw new Error('File vuoto nel Gist');
+    var parsed = JSON.parse(content);
+    if (parsed.xtream !== undefined || parsed.m3u !== undefined || parsed.epg !== undefined) {
+      db = normalizeDb(parsed);
+    } else if (Array.isArray(parsed.lists)) {
+      db = normalizeDb({ xtream: parsed.lists });
+    } else if (Array.isArray(parsed)) {
+      db = normalizeDb({ xtream: parsed });
     } else {
-      throw new Error('Formato non riconosciuto. Chiavi: '+Object.keys(parsed).join(', '));
+      throw new Error('Formato non riconosciuto. Chiavi: ' + Object.keys(parsed).join(', '));
     }
-    SAVED=JSON.parse(JSON.stringify(db));
-    setGistStatus('ok','Aggiornato · '+new Date().toLocaleTimeString('it-IT'));
+    SAVED = JSON.parse(JSON.stringify(db));
+    setGistStatus('ok', 'Aggiornato · ' + new Date().toLocaleTimeString('it-IT'));
     renderAll();
-    if (!silent) toast('✓ Sync: '+db.xtream.length+' Xtream, '+db.m3u.length+' M3U, '+db.epg.length+' EPG');
+    if (!silent) toast('✓ Sync: ' + db.xtream.length + ' Xtream, ' + db.m3u.length + ' M3U, ' + db.epg.length + ' EPG');
     else toast('☁ Liste aggiornate dal cloud');
-  } catch(e){ setGistStatus('err','Errore'); toast('⚠ Pull: '+e.message); }
+  } catch(e) { setGistStatus('err', 'Errore'); toast('⚠ Pull: ' + e.message); }
 }
 
-function setGistStatus(state,sub){
-  var dot=document.getElementById('gist-dot');
-  dot.className='gist-dot'+(state==='ok'?' ok':state==='syncing'?' syncing':'');
-  document.getElementById('gist-sub').textContent=sub||gistId;
-}
-
-function updateGistBar(){
-  var bar=document.getElementById('gist-bar');
-  if (gistToken&&gistId){
-    bar.style.display='flex';
-    document.getElementById('gist-label').textContent='GitHub Gist — Cloud Sync attivo';
-    setGistStatus('ok','ID: '+gistId.substring(0,18)+'…');
-  } else { bar.style.display='none'; }
-}
 
 /* ══════════════════════════════════════════════════════════
    FIRE TV / TV REMOTE — D-pad + OK + tasti colore
@@ -1538,7 +1604,6 @@ function updateGistBar(){
 })();
 
 init();
-updateThemeUI();
 window.afterRender && window.afterRender();
 </script>
 </body>
