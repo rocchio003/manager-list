@@ -1198,7 +1198,7 @@ function getProxyUrl(url) {
   try {
     var u = new URL(url);
     if (u.hostname === 'localhost' || u.hostname === '127.0.0.1') return null;
-    return 'https://corsproxy.io/?' + encodeURIComponent(url);
+    return 'https://corsproxy.provetta999.workers.dev/?url=' + encodeURIComponent(url);
   } catch(e) { return null; }
 }
 
