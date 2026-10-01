@@ -219,13 +219,6 @@ body.tv-mode .save-hint { display: none; }
 
 /* ── EDITOR RAW ── */
 .editor-modal { max-width: 760px; }
-.etabs { display: flex; gap: 4px; margin-bottom: 14px; background: var(--surface2); border-radius: 8px; padding: 3px; width: fit-content; }
-.etab { padding: 6px 18px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; color: var(--muted2); background: none; border: none; font-family: var(--font); transition: all 0.12s; }
-.etab:hover { color: var(--text); }
-.etab.active { background: var(--surface3); color: var(--text); }
-#m3u-editor { width:100%; min-height:320px; max-height:52vh; background:var(--bg); border:1px solid var(--border2); color:var(--text); padding:12px; border-radius:8px; font-size:11px; font-family:var(--mono); outline:none; resize:vertical; line-height:1.55; }
-#m3u-editor:focus { border-color: var(--accent); }
-body.tv-mode #m3u-editor { font-size:13px; }
 .editor-toolbar { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; flex-wrap: wrap; }
 .editor-toolbar span { font-size: 11px; font-family: var(--mono); color: var(--muted); flex: 1; }
 #raw-editor {
@@ -434,7 +427,7 @@ body[data-theme="cyan-light"]  { --accent:#0891b2; --accent2:#0e7490; }
       <div class="gist-sub" id="gist-sub"></div>
     </div>
     <div class="gist-btns">
-      <button class="btn btn-sm" onclick="gistPull()">↓ Scarica</button>
+      <button class="btn btn-sm" onclick="gistPullThenCheck()">↓ Scarica</button>
       <button class="btn btn-sm btn-accent" onclick="gistPush(false)">↑ Carica</button>
       <button class="btn btn-sm btn-danger" onclick="disconnectGist()">✕</button>
     </div>
@@ -553,46 +546,21 @@ body[data-theme="cyan-light"]  { --accent:#0891b2; --accent2:#0e7490; }
   </div>
 </div>
 
-<!-- MODAL: EDITOR LISTA -->
+<!-- MODAL: EDITOR -->
 <div class="overlay" id="modal-editor">
   <div class="modal editor-modal" onclick="event.stopPropagation()">
-    <div class="modal-title" id="editor-title">✏ Editor lista</div>
+    <div class="modal-title" id="editor-title">✏ Editor dati</div>
 
-    <!-- TAB BAR -->
-    <div class="etabs">
-      <button class="etab active" id="etab-data"  onclick="switchEditorTab('data')">📋 Dati lista</button>
-      <button class="etab"        id="etab-m3u"   onclick="switchEditorTab('m3u')">📺 Playlist M3U</button>
+    <div class="editor-toolbar">
+      <span id="editor-info">Modifica i dati delle liste.</span>
+      <button class="btn btn-xs" onclick="editorFormat()">⇄ Formatta</button>
+      <button class="btn btn-xs" onclick="editorSelectAll()">⊞ Seleziona tutto</button>
     </div>
-
-    <!-- TAB: DATI -->
-    <div id="epanel-data">
-      <div class="editor-toolbar">
-        <span id="editor-info">Modifica i dati della lista.</span>
-        <button class="btn btn-xs" onclick="editorFormat()">⇄ Formatta</button>
-        <button class="btn btn-xs" onclick="editorSelectAll('raw-editor')">⊞ Seleziona tutto</button>
-      </div>
-      <textarea id="raw-editor" spellcheck="false"></textarea>
-      <div class="editor-error" id="editor-error"></div>
-      <div class="modal-footer">
-        <button class="btn" onclick="closeModal('modal-editor')">Annulla</button>
-        <button class="btn btn-accent" onclick="saveEditor()">💾 Salva dati</button>
-      </div>
-    </div>
-
-    <!-- TAB: PLAYLIST M3U -->
-    <div id="epanel-m3u" style="display:none">
-      <div class="editor-toolbar">
-        <span id="m3u-info">— </span>
-        <button class="btn btn-xs" id="btn-load-m3u" onclick="loadM3UText()">⬇ Carica playlist</button>
-        <button class="btn btn-xs" onclick="editorSelectAll('m3u-editor')">⊞ Seleziona tutto</button>
-        <button class="btn btn-xs btn-accent" onclick="downloadM3UText()">↓ Scarica .m3u</button>
-      </div>
-      <div id="m3u-loading" style="display:none;font-size:12px;font-family:var(--mono);color:var(--muted);padding:12px 0;align-items:center;gap:8px"><span class="spin"></span> Download playlist in corso…</div>
-      <textarea id="m3u-editor" spellcheck="false" placeholder="Clicca 'Carica playlist' per scaricare i canali dal server…"></textarea>
-      <div class="editor-error" id="m3u-error"></div>
-      <div class="modal-footer">
-        <button class="btn" onclick="closeModal('modal-editor')">Chiudi</button>
-      </div>
+    <textarea id="raw-editor" spellcheck="false"></textarea>
+    <div class="editor-error" id="editor-error"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-editor')">Annulla</button>
+      <button class="btn btn-accent" onclick="saveEditor()">💾 Salva dati</button>
     </div>
 
   </div>
@@ -616,6 +584,14 @@ var editMode = { xtream: null, m3u: null, epg: null };
 var gistToken = '', gistId = '';
 var tvMode = false;
 var currentTheme = 'lime';
+
+/* Cache stato "live" (online/offline, connessioni, scadenza) — solo in memoria,
+   non viene salvata nel file né su Gist. Chiave = tipo + id lista. */
+var liveCache = {};
+var autoCheckPool = {};
+var dirtySort = false;
+var suppressCommit = false;
+var autoCheckRunning = false;
 
 /* ══════════════════════════════════════════════════════════
    DATA NORMALIZATION
@@ -656,9 +632,25 @@ function init() {
   document.querySelectorAll('.overlay').forEach(function(o) {
     o.addEventListener('click', function(e) { if (e.target === o) o.classList.remove('open'); });
   });
-  // Auto-sync da Gist all'avvio se configurato
+  // Auto-sync da Gist all'avvio se configurato.
+  // Il check di stato deve partire DOPO il pull, altrimenti gira sul db
+  // incorporato nel file (vuoto o obsoleto) invece che su quello dal cloud.
   if (gistToken && gistId) {
-    setTimeout(function(){ gistPull(true); }, 800);
+    setTimeout(function(){ startupCheck(true); }, 800);
+  } else {
+    setTimeout(function(){ startupCheck(false); }, 300);
+  }
+}
+
+/* Verifica automatica di avvio: online/offline, connessioni libere/occupate,
+   scadenza. Aspetta l'eventuale sync da Gist prima di partire. */
+function startupCheck(fromGist) {
+  if (fromGist && gistToken && gistId) {
+    Promise.resolve(gistPull(true))
+      .catch(function(){})          // il pull già gestisce i propri errori
+      .then(function(){ autoCheckAll(); });
+  } else {
+    autoCheckAll();
   }
 }
 
@@ -754,9 +746,13 @@ function updateCounts() {
 function renderXtream() {
   var c = document.getElementById('content-xtream');
   if (!db.xtream.length) { c.innerHTML = emptyHtml('🔑','Nessuna lista Xtream','Aggiungi le credenziali host / username / password'); return; }
-  var groups = { ok:[], soon:[], unk:[], exp:[] };
-  db.xtream.forEach(function(l,i){ var s=xStatus(l); (groups[s]||groups.unk).push([l,i]); });
-  var order = [['ok','Attive'],['soon','In scadenza'],['unk','Non verificate'],['exp','Scadute']];
+  var groups = { ok:[], soon:[], unk:[], exp:[], off:[], busy:[] };
+  db.xtream.forEach(function(l,i){
+    var g = groupOf(l, i);
+    (groups[g] || groups.unk).push([l,i]);
+  });
+  var order = [['off','Offline / non valide'],['busy','Connessioni esaurite'],
+               ['exp','Scadute'],['soon','In scadenza'],['ok','Attive'],['unk','Da verificare']];
   var html = '';
   for (var oi=0; oi<order.length; oi++) {
     var k=order[oi][0], lbl=order[oi][1];
@@ -765,6 +761,19 @@ function renderXtream() {
     for (var gi=0; gi<groups[k].length; gi++) html += xtreamCard(groups[k][gi][0], groups[k][gi][1]);
   }
   c.innerHTML = html;
+}
+
+/* Raggruppa per stato live (se noto), altrimenti per scadenza. */
+function groupOf(l, idx) {
+  var info = liveCache[liveKey('x', idx)];
+  if (info && info.state) {
+    if (info.state === 'offline' || info.state === 'invalid') return 'off';
+    if (info.state === 'online') {
+      var full = info.full !== undefined ? info.full : (info.max > 0 && info.active >= info.max);
+      if (full) return 'busy';
+    }
+  }
+  return xStatus(l);
 }
 
 function xStatus(l) {
@@ -786,10 +795,12 @@ function xtreamCard(l, idx) {
   var bmc = (bm[st]||bm.unk)[0], bml = (bm[st]||bm.unk)[1];
   var epgName = l.epg ? ((db.epg.filter(function(e){return e.id===l.epg;})[0])||{}).name||'' : '';
   var nativeEpg = (l.host||'').replace(/\/$/,'') + '/xmltv.php?username=' + encodeURIComponent(l.user||'') + '&password=' + encodeURIComponent(l.pass||'');
+  var live = liveCache[liveKey('x', idx)];
   return '<div class="card" id="xcard-'+idx+'">'
     +'<div class="card-top">'
-    +'<div class="card-name">'+esc(l.name)+' <span class="badge '+bmc+'">'+bml+'</span></div>'
-    +(l.expiry?'<div class="card-meta">📅 '+l.expiry+'</div>':'')
+    +'<div class="card-name">'+esc(l.name)+' <span class="badge '+bmc+'">'+bml+'</span>'
+    +'<span id="xstatus-'+idx+'">'+statusBadge(live)+'</span></div>'
+    +'<div class="card-meta"><span id="xexp-'+idx+'">'+(l.expiry?'📅 '+esc(l.expiry):'')+'</span> <span id="xconn-'+idx+'">'+connBadge(live)+'</span></div>'
     +'</div>'
     +'<div class="fields">'
     +'<span class="fl">host</span><span class="fv fv-url">'+esc(l.host)+'</span>'
@@ -806,14 +817,12 @@ function xtreamCard(l, idx) {
     +'<button class="btn btn-xs" onclick="cpNativeEpg('+idx+')" title="Copia EPG nativo">⎘ EPG</button>'
     +(epgName?'<button class="btn btn-xs" onclick="cpEpgFromX('+idx+')">⎘ EPG ext.</button>':'')
     +'<button class="btn btn-xs" onclick="toggleTest(\'x\','+idx+')" title="Verifica server">📶 Stato</button>'
-    +'<button class="btn btn-xs" onclick="openListEditor(\'x\','+idx+')" title="Modifica come testo">✎ Testo</button>'
-    +'<button class="btn btn-xs btn-icon" id="xrefbtn-'+idx+'" onclick="refreshX('+idx+')" title="Ricarica scadenza">🔄</button>'
     +'<button class="btn btn-xs btn-icon" onclick="openXtreamModal('+idx+')" title="Modifica">✏️</button>'
-    +'<button class="btn btn-xs btn-icon btn-danger" onclick="delXtream('+idx+')">🗑</button>'
+    +'<button class="btn btn-xs btn-icon btn-danger" onclick="delXtream('+idx+')" title="Elimina lista">✖</button>'
     +'</div>'
     +'<div class="test-panel" id="xtest-'+idx+'">'
     +'<div class="test-row">'
-    +'<button class="btn btn-xs" id="xtest-btn-'+idx+'" onclick="checkServer('+idx+')">🔄 Aggiorna</button>'
+    +'<button class="btn btn-xs" id="xtest-btn-'+idx+'" onclick="checkServer(\'x\','+idx+')">🔄 Aggiorna</button>'
     +'<button class="btn btn-xs btn-icon" onclick="toggleTest(\'x\','+idx+')" title="Chiudi">✕</button>'
     +'</div>'
     +'<div class="test-result" id="xtest-res-'+idx+'"></div>'
@@ -884,16 +893,6 @@ function delXtream(idx) {
   db.xtream.splice(idx,1); commit(); renderAll();
 }
 
-async function refreshX(idx) {
-  var l=db.xtream[idx];
-  var btn=document.getElementById('xrefbtn-'+idx);
-  btn.innerHTML='<span class="spin"></span>'; btn.disabled=true;
-  var expiry=await fetchExpiry(l.host,l.user,l.pass);
-  btn.innerHTML='🔄'; btn.disabled=false;
-  if (expiry) { db.xtream[idx].expiry=expiry; commit(); renderAll(); toast('✓ Scadenza: '+expiry); }
-  else toast('⚠ Server non raggiungibile o CORS bloccato');
-}
-
 function cpXtream(i){ var l=db.xtream[i]; cp(l.host+'/get.php?username='+l.user+'&password='+l.pass+'&type=m3u_plus&output=ts'); }
 function cpM3Ux(i){ var l=db.xtream[i]; cp(l.host+'/get.php?username='+l.user+'&password='+l.pass+'&type=m3u_plus'); }
 function cpCreds(i){ var l=db.xtream[i]; cp('Host: '+l.host+'\nUsername: '+l.user+'\nPassword: '+l.pass); }
@@ -915,8 +914,11 @@ function renderM3U() {
 
 function m3uCard(l,idx) {
   var epgObj=l.epg?db.epg.filter(function(e){return e.id===l.epg;})[0]:null;
-  return '<div class="card">'
-    +'<div class="card-top"><div class="card-name">'+esc(l.name)+' <span class="badge b-m3u">M3U</span></div></div>'
+  var live = liveCache[liveKey('m', idx)];
+  return '<div class="card" id="mcard-'+idx+'">'
+    +'<div class="card-top"><div class="card-name">'+esc(l.name)+' <span class="badge b-m3u">M3U</span>'
+    +'<span id="mstatus-'+idx+'">'+statusBadge(live)+'</span></div>'
+    +'<div class="card-meta"><span id="mconn-'+idx+'">'+connBadge(live)+'</span></div></div>'
     +'<div class="fields"><span class="fl">url</span><span class="fv fv-url">'+esc(l.url)+'</span>'
     +(epgObj?'<span class="fl">epg</span><span class="fv"><span class="badge b-epg">📡 '+esc(epgObj.name)+'</span></span>':'')
     +'</div>'
@@ -926,8 +928,7 @@ function m3uCard(l,idx) {
     +(epgObj?'<button class="btn btn-xs" onclick="cpEpgFromM3U('+idx+')">⎘ EPG URL</button>':'')
     +'<button class="btn btn-xs btn-icon" onclick="openM3UModal('+idx+')" title="Modifica">✏️</button>'
     +'<button class="btn btn-xs" onclick="toggleTest(\'m\','+idx+')" title="Verifica server">📶 Stato</button>'
-    +'<button class="btn btn-xs" onclick="openListEditor(\'m\','+idx+')" title="Modifica come testo">✎ Testo</button>'
-    +'<button class="btn btn-xs btn-icon btn-danger" onclick="delM3U('+idx+')">🗑</button>'
+    +'<button class="btn btn-xs btn-icon btn-danger" onclick="delM3U('+idx+')" title="Elimina playlist">✖</button>'
     +'</div>'
     +'<div class="test-panel" id="mtest-'+idx+'">'
     +'<div class="test-row">'
@@ -995,7 +996,7 @@ function epgCard(e,idx) {
     +'<div class="epg-actions">'
     +'<button class="btn btn-xs" onclick="cpEpg('+idx+')">⎘ Copia URL EPG</button>'
     +'<button class="btn btn-xs btn-icon" onclick="openEPGModal('+idx+')" title="Modifica">✏️</button>'
-    +'<button class="btn btn-xs btn-icon btn-danger" onclick="delEPG('+idx+')">🗑</button>'
+    +'<button class="btn btn-xs btn-icon btn-danger" onclick="delEPG('+idx+')" title="Elimina sorgente">✖</button>'
     +'</div></div>';
 }
 
@@ -1088,6 +1089,7 @@ function getUpdatedHtml(){
 }
 function commit(){
   SAVED=JSON.parse(JSON.stringify(db));
+  if(suppressCommit) return;
   if(gistToken&&gistId) gistPush(true);
 }
 function downloadSelf(){
@@ -1125,65 +1127,6 @@ async function fetchExpiry(host,user,pass){
   return null;
 }
 
-/* ── EDITOR TAB SWITCH ── */
-function switchEditorTab(tab){
-  document.getElementById('etab-data').classList.toggle('active',tab==='data');
-  document.getElementById('etab-m3u').classList.toggle('active',tab==='m3u');
-  document.getElementById('epanel-data').style.display=tab==='data'?'':'none';
-  document.getElementById('epanel-m3u').style.display=tab==='m3u'?'':'none';
-}
-
-/* ── LOAD / DOWNLOAD M3U TEXT ── */
-async function loadM3UText(){
-  var type=_listEditorType, idx=_listEditorIdx;
-  var item=type==='x'?db.xtream[idx]:db.m3u[idx];
-  if(!item) return;
-  var m3uUrl=type==='x'
-    ?(item.host.replace(/\/$/,'')+'/get.php?username='+encodeURIComponent(item.user)+'&password='+encodeURIComponent(item.pass)+'&type=m3u_plus')
-    :item.url;
-  var infoEl=document.getElementById('m3u-info');
-  var errEl=document.getElementById('m3u-error');
-  var ta=document.getElementById('m3u-editor');
-  var loadEl=document.getElementById('m3u-loading');
-  var btn=document.getElementById('btn-load-m3u');
-  infoEl.textContent='Download in corso…'; errEl.textContent='';
-  ta.style.display='none'; loadEl.style.display='flex'; btn.disabled=true;
-  var text=null;
-  try{ var r=await fetch(m3uUrl,{signal:AbortSignal.timeout(20000)}); if(r.ok) text=await r.text(); }catch(e){}
-  if(!text){
-    try{
-      var pu=getProxyUrl(m3uUrl);
-      if(pu){ var r2=await fetch(pu,{signal:AbortSignal.timeout(25000)}); if(r2.ok) text=await r2.text(); }
-    }catch(e){}
-  }
-  if(text&&!text.trim().startsWith('#EXTM3U')&&text.trim().startsWith('<')) text=null;
-  loadEl.style.display='none'; ta.style.display=''; btn.disabled=false;
-  if(text){
-    ta.value=text;
-    var ch=(text.match(/#EXTINF/g)||[]).length;
-    infoEl.textContent=ch+' canali · '+Math.round(text.length/1024)+' KB';
-    errEl.textContent='';
-  } else {
-    infoEl.textContent='Download fallito';
-    var hint=isWebView()?" (l'app/APK potrebbe bloccare il download)":'';
-    errEl.textContent='⚠ Impossibile scaricare'+hint+'. URL: '+m3uUrl;
-  }
-}
-
-function downloadM3UText(){
-  var text=document.getElementById('m3u-editor').value;
-  if(!text.trim()){toast('⚠ Carica prima la playlist');return;}
-  var type=_listEditorType, idx=_listEditorIdx;
-  var item=type==='x'?db.xtream[idx]:db.m3u[idx];
-  var name=((item&&item.name)?item.name:'playlist').replace(/[^a-z0-9]/gi,'_').toLowerCase();
-  var blob=new Blob([text],{type:'audio/x-mpegurl'});
-  var a=document.createElement('a');
-  var url=URL.createObjectURL(blob);
-  a.href=url; a.download=name+'.m3u'; a.click();
-  setTimeout(function(){ URL.revokeObjectURL(url); },1000);
-  toast('✓ '+name+'.m3u scaricato');
-}
-
 /* ══════════════════════════════════════════════════════════
    CORS / WEBVIEW HELPERS
 ══════════════════════════════════════════════════════════ */
@@ -1210,152 +1153,276 @@ function toggleTest(type, idx) {
   if (!panel) return;
   var wasOpen = panel.classList.contains('open');
   panel.classList.toggle('open');
-  if (!wasOpen) setTimeout(function(){ testServer(type, idx); }, 80);
+  if (!wasOpen) setTimeout(function(){ checkServer(type, idx); }, 80);
 }
 
-async function testServer(type, idx) {
-  var prefix = type==='x' ? 'xtest' : 'mtest';
-  var res = document.getElementById(prefix+'-res-'+idx);
-  var btn = document.getElementById(prefix+'-btn-'+idx);
-  if (!res) return;
-  res.className = 'test-result testing';
-  res.innerHTML = '<span class="spin"></span> Test in corso…';
-  if (btn) btn.disabled = true;
-
+/* ── PROBE: restituiscono dati strutturati, non scrivono nel DOM ── */
+function probeXtream(item) {
+  var apiUrl = (item.host||'').replace(/\/$/,'') + '/player_api.php?username=' + encodeURIComponent(item.user||'') + '&password=' + encodeURIComponent(item.pass||'');
   var data = null;
-  var networkError = false;
-  var corsBlocked = false;
+  if (apiUrl.indexOf('player_api.php') === -1) return Promise.resolve({ state:'unknown', reason:'host non valido' });
 
-  if (type === 'x') {
-    var item = db.xtream[idx];
-    if (!item) return;
-    var apiUrl = item.host.replace(/\/$/,'') + '/player_api.php?username=' + encodeURIComponent(item.user) + '&password=' + encodeURIComponent(item.pass);
+  return fetch(apiUrl, { signal: AbortSignal.timeout(9000) })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .catch(function(){ return null; })
+    .then(function(d){ data = d; return data; })
+    .then(function(){ if (data) return data; return probeViaProxy(apiUrl, true); })
+    .then(function(d){
+      if (d) return parseXtream(d);
+      return fetch(apiUrl, { mode:'no-cors', signal: AbortSignal.timeout(8000) })
+        .then(function(){ return { state:'reachable', cors:true }; })
+        .catch(function(){ return { state:'offline' }; });
+    });
+}
 
-    try {
-      var r = await fetch(apiUrl, { signal: AbortSignal.timeout(9000) });
-      if (r.ok) data = await r.json();
-    } catch(e) { networkError = true; if (e.name==='TypeError') corsBlocked = true; }
+function parseXtream(d) {
+  var ui = (d && d.user_info) || {};
+  var si = (d && d.server_info) || {};
+  var status = ui.status || '';
+  if (!ui.auth || status.toLowerCase() === 'disabled') {
+    return { state:'invalid', status:status, server:si.url||'' };
+  }
+  var active = parseInt(ui.active_cons) || 0;
+  var maxc   = parseInt(ui.max_connections) || 0;
+  var expTs  = ui.exp_date ? new Date(parseInt(ui.exp_date) * 1000) : null;
+  return {
+    state: 'online',
+    active: active,
+    max: maxc,
+    full: maxc > 0 && active >= maxc,
+    expTs: expTs && !isNaN(expTs) ? expTs : null,
+    expiry: expTs && !isNaN(expTs) ? expTs.toISOString().split('T')[0] : null,
+    status: status,
+    server: si.url || '',
+    port: si.port || ''
+  };
+}
 
-    if (!data) {
-      try {
-        var pu = getProxyUrl(apiUrl);
-        if (pu) { var r2 = await fetch(pu, { signal: AbortSignal.timeout(15000) }); if (r2.ok) data = await r2.json(); }
-      } catch(e) {}
-    }
+function probeM3U(item) {
+  if (!item.url) return Promise.resolve({ state:'unknown' });
+  return fetch(item.url, { headers:{'Range':'bytes=0-1023'}, signal: AbortSignal.timeout(9000) })
+    .then(function(r){ return r.status >= 200 && r.status < 500; })
+    .catch(function(){ return false; })
+    .then(function(ok){
+      if (ok) return { state:'online' };
+      return fetchViaProxy(item.url)
+        .then(function(ok2){ return ok2 ? { state:'online' } : null; })
+        .then(function(r){
+          if (r) return r;
+          return fetch(item.url, { mode:'no-cors', signal: AbortSignal.timeout(8000) })
+            .then(function(){ return { state:'reachable', cors:true }; })
+            .catch(function(){ return { state:'offline' }; });
+        });
+    });
+}
 
-    var reachable = false;
-    if (!data) {
-      try { await fetch(apiUrl, { mode: 'no-cors', signal: AbortSignal.timeout(8000) }); reachable = true; } catch(e) {}
-    }
+function fetchViaProxy(url) {
+  var pu = getProxyUrl(url);
+  if (!pu) return Promise.resolve(false);
+  return fetch(pu, { signal: AbortSignal.timeout(15000) })
+    .then(function(r){ return r.status >= 200 && r.status < 500; })
+    .catch(function(){ return false; });
+}
 
-    if (btn) btn.disabled = false;
+function probeViaProxy(apiUrl, json) {
+  var pu = getProxyUrl(apiUrl);
+  if (!pu) return Promise.resolve(null);
+  return fetch(pu, { signal: AbortSignal.timeout(15000) })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .catch(function(){ return null; });
+}
 
-    if (data) {
-      var ui = data.user_info || {};
-      var si = data.server_info || {};
-      var auth = ui.auth;
-      var active = parseInt(ui.active_cons) || 0;
-      var maxc   = parseInt(ui.max_connections) || 0;
-      var expTs  = ui.exp_date ? new Date(parseInt(ui.exp_date)*1000) : null;
-      var expStr = expTs ? expTs.toLocaleDateString('it-IT') : 'N/D';
-      var status = ui.status || '';
-      if (!auth || status.toLowerCase() === 'disabled') {
-        res.className = 'test-result offline';
-        res.innerHTML = '❌ Credenziali non valide o account disabilitato';
-        return;
-      }
-      var full = maxc > 0 && active >= maxc;
-      var connColor = full ? 'var(--red)' : active > 0 ? 'var(--orange)' : 'var(--accent)';
-      res.className = 'test-result online';
-      res.innerHTML =
-        '✅ Server <b>ONLINE</b><br>' +
-        '<span style="color:var(--muted2)">Connessioni: </span><span style="color:'+connColor+'">' + active + ' / ' + maxc + '</span><br>' +
-        '<span style="color:var(--muted2)">Scadenza: </span>' + expStr +
-        (si.url ? '<br><span style="color:var(--muted2)">Server: </span>' + esc(si.url) + (si.port ? ':'+si.port : '') : '') +
-        (full ? '<br><span style="color:var(--red)">⚠ Connessioni esaurite</span>' : '');
-      return;
-    }
+/* ── PITTURA CARD (badge + riga connessioni) ── */
+function liveKey(type, idx) { return type + ':' + idx; }
 
-    if (reachable) {
-      res.className = 'test-result online';
-      var hint = isWebView()
-        ? `<br><span style="color:var(--muted2);font-size:11px">⚠ L'app blocca le richieste esterne (CORS).<br>Apri questo file nel browser per vedere i dettagli.</span>`
-        : `<br><span style="color:var(--muted2);font-size:11px">⚠ Il server risponde ma blocca la lettura dei dati (CORS).</span>`;
-      res.innerHTML = '✅ Server <b>RAGGIUNGIBILE</b> (dettagli nascosti)' + hint;
-      return;
-    }
+function connBadge(info) {
+  if (!info) return '<span class="badge b-unk">—</span>';
+  if (info.state === 'online') {
+    var full = info.full !== undefined ? info.full : (info.max > 0 && info.active >= info.max);
+    var cls = full ? 'b-exp' : (info.active > 0 ? 'b-soon' : 'b-ok');
+    var txt = info.max > 0 ? (info.active + '/' + info.max) : String(info.active);
+    return '<span class="badge ' + cls + '">🔌 ' + txt + '</span>';
+  }
+  if (info.state === 'reachable') return '<span class="badge b-unk">🔌 ?</span>';
+  return '<span class="badge b-unk">🔌 —</span>';
+}
 
-    res.className = 'test-result offline';
-    var errHint = isWebView()
-      ? `<br><span style="color:var(--muted2);font-size:11px">💡 Prova ad aprire il file direttamente nel browser.</span>`
-      : '';
-    res.innerHTML = '❌ Server non raggiungibile' + errHint;
-
-  } else {
-    var item = db.m3u[idx];
-    if (!item) return;
-    var ok = false;
-    try {
-      var rm = await fetch(item.url, {
-        method:'GET',
-        headers:{'Range':'bytes=0-1023'},
-        signal: AbortSignal.timeout(9000)
-      });
-      ok = rm.status >= 200 && rm.status < 500;
-    } catch(e) {}
-
-    if (!ok) {
-      try {
-        var pm = getProxyUrl(item.url);
-        if (pm) { var rm2 = await fetch(pm, { method:'GET', signal: AbortSignal.timeout(15000) }); ok = rm2.status >= 200 && rm2.status < 500; }
-      } catch(e) {}
-    }
-
-    if (!ok) {
-      try { await fetch(item.url, { mode: 'no-cors', signal: AbortSignal.timeout(8000) }); ok = true; } catch(e) {}
-    }
-
-    if (btn) btn.disabled = false;
-    res.className = ok ? 'test-result online' : 'test-result offline';
-    var m3uHint = (!ok && isWebView())
-      ? `<br><span style="color:var(--muted2);font-size:11px">💡 L'app/APK potrebbe bloccare le connessioni esterne. Prova nel browser.</span>`
-      : '';
-    res.innerHTML = (ok ? '✅ Server <b>ONLINE</b> — playlist raggiungibile' : '❌ Server non raggiungibile') + m3uHint;
+function statusBadge(info) {
+  if (!info) return '<span class="badge b-unk">…</span>';
+  switch (info.state) {
+    case 'checking': return '<span class="badge b-soon">⏳ Verifica…</span>';
+    case 'online':   return '<span class="badge b-ok">ONLINE</span>';
+    case 'reachable':return '<span class="badge b-soon">RAGGIUNGIBILE</span>';
+    case 'invalid':  return '<span class="badge b-exp">CRED. NON VALIDE</span>';
+    case 'offline':  return '<span class="badge b-exp">OFFLINE</span>';
+    default:         return '<span class="badge b-unk">N/D</span>';
   }
 }
 
-function checkServer(idx)    { testServer('x', idx); }
-function checkServerM3U(idx) { testServer('m', idx); }
+function expiryFromInfo(info) {
+  if (info && info.expiry) return info.expiry;
+  if (info && info.expTs) return info.expTs.toISOString().split('T')[0];
+  return '';
+}
+
+function paintLive(type, idx) {
+  var prefix = type === 'x' ? 'x' : 'm';
+  var info = liveCache[liveKey(type, idx)];
+  var item = type === 'x' ? db.xtream[idx] : db.m3u[idx];
+  if (!item) return;
+  if (info && info.id && info.id !== item.id) { delete liveCache[liveKey(type, idx)]; info = null; }
+  var sb = document.getElementById(prefix + 'status-' + idx);
+  if (sb) sb.innerHTML = statusBadge(info);
+  var cb = document.getElementById(prefix + 'conn-' + idx);
+  if (cb) cb.innerHTML = connBadge(info);
+  var eb = document.getElementById(prefix + 'exp-' + idx);
+  if (eb) {
+    var exp = expiryFromInfo(info);
+    if (exp) {
+      var d = daysUntil(exp);
+      var cls = d < 0 ? 'b-exp' : d <= 7 ? 'b-soon' : 'b-ok';
+      eb.innerHTML = '<span class="badge ' + cls + '">📅 ' + exp + '</span>';
+    } else {
+      eb.innerHTML = '';
+    }
+  }
+}
+
+/* ── CHECK DI UNA LISTA (usato sia dall'avvio sia dal pulsante) ── */
+function checkServer(type, idx) {
+  var item = type === 'x' ? db.xtream[idx] : db.m3u[idx];
+  if (!item) return;
+  var key = liveKey(type, idx);
+  if (autoCheckPool[key]) return;              // già in corso
+  autoCheckPool[key] = true;
+  liveCache[key] = { state:'checking', id:item.id };
+  paintLive(type, idx);
+  renderResult(type, idx, { state:'checking' });
+
+  var expiryChanged = false;
+  var p = type === 'x' ? probeXtream(item) : probeM3U(item);
+  return p.then(function(info){
+    info.id = item.id;
+    info.checkedAt = Date.now();
+    liveCache[key] = info;
+    delete autoCheckPool[key];
+    paintLive(type, idx);
+    renderResult(type, idx, info);
+    // Se il server ha dato una scadenza, allinea il dato salvato
+    if (type === 'x' && info.state === 'online' && info.expiry && db.xtream[idx]) {
+      if (db.xtream[idx].expiry !== info.expiry) {
+        db.xtream[idx].expiry = info.expiry;
+        db.xtream[idx].status = daysUntil(info.expiry) < 0 ? 'exp' : daysUntil(info.expiry) <= 7 ? 'soon' : 'ok';
+        expiryChanged = true;
+      }
+    }
+    if (expiryChanged) { commit(); dirtySort = true; }
+  }).catch(function(e){
+    var err = { state:'offline', error: e && e.message };
+    liveCache[key] = err;
+    delete autoCheckPool[key];
+    paintLive(type, idx);
+    renderResult(type, idx, err);
+  });
+}
+
+function checkServerM3U(idx) { return checkServer('m', idx); }
+
+function renderResult(type, idx, info) {
+  var prefix = type === 'x' ? 'xtest' : 'mtest';
+  var res = document.getElementById(prefix + '-res-' + idx);
+  var btn = document.getElementById(prefix + '-btn-' + idx);
+  if (btn) btn.disabled = false;
+  if (!res) return;
+
+  if (!info || info.state === 'checking') {
+    res.className = 'test-result testing';
+    res.innerHTML = '<span class="spin"></span> Test in corso…';
+    return;
+  }
+
+  var corsHint = function(extra) {
+    var base = isWebView()
+      ? "L'app/APK blocca le richieste esterne (CORS). Apri questo file nel browser per i dettagli."
+      : "Il server risponde ma blocca la lettura dei dati (CORS).";
+    return (extra ? '<br>' : '') + '<span style="color:var(--muted2);font-size:11px">⚠ ' + base + '</span>';
+  };
+
+  if (info.state === 'online' && type === 'x') {
+    var color = info.full ? 'var(--red)' : info.active > 0 ? 'var(--orange)' : 'var(--accent)';
+    var serverLine = info.server ? '<br><span style="color:var(--muted2)">Server: </span>' + esc(info.server) + (info.port ? ':' + info.port : '') : '';
+    var expStr = info.expTs ? info.expTs.toLocaleDateString('it-IT') : 'N/D';
+    res.className = 'test-result online';
+    res.innerHTML =
+      '✅ Server <b>ONLINE</b><br>' +
+      '<span style="color:var(--muted2)">Connessioni: </span><span style="color:' + color + '">' + info.active + ' / ' + info.max + '</span>' +
+      (info.max <= 0 ? ' <span style="color:var(--muted2)">(n/d)</span>' : (info.full ? ' — <b style="color:var(--red)">ESAURITE</b>' : ' — <span style="color:var(--accent)">libere</span>')) + '<br>' +
+      '<span style="color:var(--muted2)">Scadenza: </span>' + expStr + serverLine +
+      (info.full ? '<br><span style="color:var(--red)">⚠ Connessioni esaurite</span>' : '') +
+      (info.status ? '<br><span style="color:var(--muted2)">Stato: </span>' + esc(info.status) : '');
+    return;
+  }
+
+  if (info.state === 'online') {
+    res.className = 'test-result online';
+    res.innerHTML = '✅ Server <b>ONLINE</b> — playlist raggiungibile';
+    return;
+  }
+  if (info.state === 'invalid') {
+    res.className = 'test-result offline';
+    res.innerHTML = '❌ Credenziali non valide o account disabilitato';
+    return;
+  }
+  if (info.state === 'reachable') {
+    res.className = 'test-result online';
+    res.innerHTML = '✅ Server <b>RAGGIUNGIBILE</b> (dettagli nascosti)' + corsHint();
+    return;
+  }
+  res.className = 'test-result offline';
+  var errHint = isWebView() ? '<br><span style="color:var(--muted2);font-size:11px">💡 Prova ad aprire il file direttamente nel browser.</span>' : '';
+  res.innerHTML = '❌ Server non raggiungibile' + (info && info.error ? ' (' + esc(info.error) + ')' : '') + errHint;
+}
 
 /* ══════════════════════════════════════════════════════════
-   EDITOR SINGOLA LISTA
+   AUTO-CHECK ALL'AVVIO
 ══════════════════════════════════════════════════════════ */
-var _listEditorType = null;
-var _listEditorIdx  = null;
+function autoCheckAll() {
+  if (autoCheckRunning) return;      // già in corso: non raddoppiare le richieste
+  var jobs = [];
+  db.xtream.forEach(function(_, i) { jobs.push({ type:'x', idx:i }); });
+  db.m3u.forEach(function(_, i)    { jobs.push({ type:'m', idx:i }); });
+  if (!jobs.length) return;
 
-function openListEditor(type, idx) {
-  _listEditorType = type;
-  _listEditorIdx  = idx;
-  var item = type==='x' ? db.xtream[idx] : type==='m' ? db.m3u[idx] : db.epg[idx];
-  if (!item) return;
-  var ta = document.getElementById('raw-editor');
-  var errEl = document.getElementById('editor-error');
-  ta.value = JSON.stringify(item, null, 2);
-  errEl.textContent = '';
-  var typeLabel = type==='x' ? 'Xtream' : type==='m' ? 'M3U' : 'EPG';
-  document.getElementById('editor-title').textContent = '✏ ' + esc(item.name||item.url||'');
-  document.getElementById('editor-info').textContent = 'Modifica ' + typeLabel + ': ' + esc(item.name||item.url||'');
-  ta.dataset.mode = 'single';
-  // Reset M3U tab
-  document.getElementById('m3u-editor').value = '';
-  document.getElementById('m3u-error').textContent = '';
-  document.getElementById('m3u-info').textContent = 'Premi "Carica playlist" per scaricare i canali dal server';
-  // Mostra tab M3U solo per Xtream e M3U, non EPG
-  document.getElementById('etab-m3u').style.display = type==='e' ? 'none' : '';
-  switchEditorTab('data');
-  openModal('modal-editor');
-  setTimeout(function(){ ta.focus(); }, 150);
+  var running = 0;
+  var done = 0;
+  dirtySort = false;
+  suppressCommit = true;
+  autoCheckRunning = true;
+
+  function pump() {
+    while (running < 3 && done < jobs.length) {
+      var j = jobs[done++];
+      running++;
+      Promise.resolve(checkServer(j.type, j.idx)).catch(function(){}).then(function() {
+        running--;
+        pump();
+      });
+    }
+    if (done >= jobs.length && running === 0) {
+      suppressCommit = false;
+      autoCheckRunning = false;
+      var changed = dirtySort;
+      dirtySort = false;
+      if (changed) {
+        // Riordina le sezioni ora che scadenze e stati sono noti
+        renderAll();
+        if (gistToken && gistId) gistPush(true);
+      }
+    }
+  }
+  pump();
 }
+
 
 /* ══════════════════════════════════════════════════════════
    EDITOR RAW
@@ -1363,14 +1430,11 @@ function openListEditor(type, idx) {
 function openEditor() {
   var json = JSON.stringify(db, null, 2);
   document.getElementById('raw-editor').value = json;
-  document.getElementById('raw-editor').dataset.mode = 'full';
   document.getElementById('editor-error').textContent = '';
   var total = db.xtream.length + db.m3u.length + db.epg.length;
   document.getElementById('editor-title').textContent = '✏ Editor dati completo';
   document.getElementById('editor-info').textContent =
     db.xtream.length + ' Xtream · ' + db.m3u.length + ' M3U · ' + db.epg.length + ' EPG — ' + total + ' elementi totali';
-  document.getElementById('etab-m3u').style.display = 'none';
-  switchEditorTab('data');
   openModal('modal-editor');
   setTimeout(function(){ document.getElementById('raw-editor').focus(); }, 150);
 }
@@ -1387,8 +1451,8 @@ function editorFormat() {
   }
 }
 
-function editorSelectAll(targetId) {
-  var ta = document.getElementById(targetId||'raw-editor');
+function editorSelectAll() {
+  var ta = document.getElementById('raw-editor');
   ta.focus(); ta.select();
 }
 
@@ -1396,37 +1460,21 @@ function saveEditor() {
   var ta = document.getElementById('raw-editor');
   var errEl = document.getElementById('editor-error');
   var text = ta.value.trim();
-  var mode = ta.dataset.mode;
   try {
     var parsed = JSON.parse(text);
-    if (mode === 'single') {
-      // Salva solo la singola voce
-      if (!parsed.id) parsed.id = uid();
-      var type = _listEditorType;
-      var idx  = _listEditorIdx;
-      if (type === 'x') db.xtream[idx] = parsed;
-      else if (type === 'm') db.m3u[idx] = parsed;
-      else db.epg[idx] = parsed;
-      errEl.textContent = '';
-      closeModal('modal-editor');
-      commit(); renderAll();
-      toast('✓ Lista aggiornata');
+    var newDb;
+    if (parsed.xtream !== undefined || parsed.m3u !== undefined || parsed.epg !== undefined) {
+      newDb = normalizeDb(parsed);
+    } else if (Array.isArray(parsed)) {
+      newDb = normalizeDb({ xtream: parsed, m3u: db.m3u, epg: db.epg });
     } else {
-      // Salva tutto il db
-      var newDb;
-      if (parsed.xtream !== undefined || parsed.m3u !== undefined || parsed.epg !== undefined) {
-        newDb = normalizeDb(parsed);
-      } else if (Array.isArray(parsed)) {
-        newDb = normalizeDb({ xtream: parsed, m3u: db.m3u, epg: db.epg });
-      } else {
-        throw new Error('Formato non riconosciuto. Usa {xtream:[...], m3u:[...], epg:[...]}');
-      }
-      db = newDb;
-      errEl.textContent = '';
-      closeModal('modal-editor');
-      commit(); renderAll();
-      toast('✓ Dati salvati — ' + (db.xtream.length+db.m3u.length+db.epg.length) + ' elementi');
+      throw new Error('Formato non riconosciuto. Usa {xtream:[...], m3u:[...], epg:[...]}');
     }
+    db = newDb;
+    errEl.textContent = '';
+    closeModal('modal-editor');
+    commit(); renderAll();
+    toast('✓ Dati salvati — ' + (db.xtream.length+db.m3u.length+db.epg.length) + ' elementi');
   } catch(e) {
     errEl.textContent = '⚠ JSON non valido: ' + e.message;
   }
@@ -1481,6 +1529,7 @@ async function connectGist() {
       closeModal('modal-gist'); btn.innerHTML = 'Connetti'; btn.disabled = false;
       updateGistBar();
       await gistPull(false);
+      autoCheckAll();
     } else {
       var rc = await fetch('https://api.github.com/gists', { method: 'POST', headers: hdrs,
         body: JSON.stringify({ description: 'IPTV Manager — Sparkle TV', public: false,
@@ -1494,13 +1543,19 @@ async function connectGist() {
       btn.innerHTML = 'Connetti'; btn.disabled = false;
       setGistStatus('ok', 'Nuovo Gist creato');
       toast('✓ Gist creato! ID: ' + gistId);
+      autoCheckAll();
     }
   } catch(e) { btn.innerHTML = 'Connetti'; btn.disabled = false; alert('Errore: ' + e.message); }
 }
 
+/* Pull manuale dal Gist seguito dalla verifica di stato */
+async function gistPullThenCheck() {
+  await gistPull(false);
+  autoCheckAll();
+}
+
 function disconnectGist() {
-  if (!confirm('Disconnettere Cloud Sync?')) return;
-  gistToken = ''; gistId = '';
+  if (!confirm('Disconnettere Cloud Sync?')) return;  gistToken = ''; gistId = '';
   localStorage.removeItem('iptv_gh_token');
   localStorage.removeItem('iptv_gist_id');
   updateGistBar(); toast('Cloud Sync disconnesso');
@@ -1527,7 +1582,7 @@ async function gistPush(silent) {
 }
 
 async function gistPull(silent) {
-  if (!gistToken || !gistId) return;
+  if (!gistToken || !gistId) return false;
   setGistStatus('syncing', 'Scaricamento…');
   try {
     var r = await fetch('https://api.github.com/gists/' + gistId, {
@@ -1555,11 +1610,15 @@ async function gistPull(silent) {
       throw new Error('Formato non riconosciuto. Chiavi: ' + Object.keys(parsed).join(', '));
     }
     SAVED = JSON.parse(JSON.stringify(db));
+    // Le liste possono essere diverse da quelle incorporate: invalida la cache live
+    liveCache = {};
+    autoCheckPool = {};
     setGistStatus('ok', 'Aggiornato · ' + new Date().toLocaleTimeString('it-IT'));
     renderAll();
     if (!silent) toast('✓ Sync: ' + db.xtream.length + ' Xtream, ' + db.m3u.length + ' M3U, ' + db.epg.length + ' EPG');
     else toast('☁ Liste aggiornate dal cloud');
-  } catch(e) { setGistStatus('err', 'Errore'); toast('⚠ Pull: ' + e.message); }
+    return true;
+  } catch(e) { setGistStatus('err', 'Errore'); toast('⚠ Pull: ' + e.message); return false; }
 }
 
 
