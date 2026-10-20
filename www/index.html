@@ -109,7 +109,8 @@ body.tv-mode .tv-focus { outline-width: 2px !important; }
 .gist-btns { display: flex; gap: 6px; }
 
 /* ── TABS ── */
-.tabs { display: flex; gap: 4px; margin-bottom: 1.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 4px; width: fit-content; }
+.tabs { display: flex; gap: 4px; margin-bottom: 1.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 4px; width: fit-content; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
 .tab { padding: 7px 20px; border-radius: 7px; font-size: 13px; font-weight: 700; cursor: pointer; color: var(--muted2); transition: all 0.14s; border: none; background: none; font-family: var(--font); display: flex; align-items: center; gap: 7px; }
 .tab:hover { color: var(--text); }
 .tab.active { background: var(--surface3); color: var(--text); }
@@ -172,6 +173,7 @@ body[data-theme$="-light"] .s-checking { background:#e8eaef; color:#4b5563; bord
 .b-unk  { background:var(--surface2); color:var(--muted2); }
 .b-m3u  { background:#0c1f38; color:var(--blue); }
 .b-epg  { background:#1e1038; color:#b08bff; }
+.b-stalker { background:#1c1030; color:#c084fc; }
 .fields { display: grid; grid-template-columns: 72px 1fr; gap: 3px 10px; font-size: 12px; margin-bottom: 10px; align-items: center; }
 .fl { color: var(--muted); font-family: var(--mono); font-size: 11px; }
 .fv { font-family: var(--mono); color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
@@ -374,6 +376,7 @@ body[data-theme$="-light"] .b-exp  { background:#ffe0e0; color:#c40000; }
 body[data-theme$="-light"] .b-unk  { background:#e8eaef; color:#4b5563; }
 body[data-theme$="-light"] .b-m3u  { background:#dbeafe; color:#1d4ed8; }
 body[data-theme$="-light"] .b-epg  { background:#ede9fe; color:#6d28d9; }
+body[data-theme$="-light"] .b-stalker { background:#f3e8ff; color:#7e22ce; }
 body[data-theme$="-light"] .test-result.online  { background:#e8f5d6; color:#1a1c23; }
 body[data-theme$="-light"] .test-result.offline { background:#ffe0e0; color:#c40000; }
 body[data-theme$="-light"] .test-result.testing { background:#f0f1f4; color:#4b5563; }
@@ -482,12 +485,16 @@ body[data-theme="cyan-light"]  { --accent:#0891b2; --accent2:#0e7490; }
     <button class="tab" id="tab-epg" onclick="switchTab('epg')" tabindex="0">
       📡 EPG <span class="tab-count" id="tc-epg">0</span>
     </button>
+    <button class="tab" id="tab-stalker" onclick="switchTab('stalker')" tabindex="0">
+      📺 Stalker <span class="tab-count" id="tc-stalker">0</span>
+    </button>
   </div>
 
   <!-- CONTENT -->
   <div id="content-xtream"></div>
   <div id="content-m3u" style="display:none"></div>
   <div id="content-epg" style="display:none"></div>
+  <div id="content-stalker" style="display:none"></div>
 
   <div class="save-hint">
     Dati incorporati nel file HTML. &nbsp;
@@ -568,6 +575,34 @@ body[data-theme="cyan-light"]  { --accent:#0891b2; --accent2:#0e7490; }
 </div>
 
 
+<!-- MODAL: STALKER -->
+<div class="overlay" id="modal-stalker">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" id="ms-title">Nuovo portale Stalker</div>
+    <div class="fg"><label class="fl2">Titolo</label><input type="text" id="ms-name" placeholder="Es. Portale principale…" /></div>
+    <div class="fg">
+      <label class="fl2">URL server</label>
+      <input type="url" id="ms-url" placeholder="http://server.example.com/c/" />
+      <div class="hint" style="margin-top:6px">Puoi incollare l'host, un URL che termina con <code>/c/</code>, <code>portal.php</code> o <code>server/load.php</code>.</div>
+    </div>
+    <div class="fg">
+      <label class="fl2">Indirizzo MAC</label>
+      <input type="text" id="ms-mac" placeholder="00:1A:79:XX:XX:XX" maxlength="17" autocomplete="off" spellcheck="false" oninput="formatMacInput(this)" />
+      <div class="hint" style="margin-top:6px">Formato <code>00:1A:79:XX:XX:XX</code>. Trattini, punti e lettere minuscole vengono normalizzati.</div>
+    </div>
+    <div class="fg"><label class="fl2">Numero di serie (opzionale)</label><input type="text" id="ms-serial" placeholder="Solo se già registrato presso il fornitore" autocomplete="off" /></div>
+    <div class="frow2">
+      <div class="fg"><label class="fl2">Scadenza (opzionale)</label><input type="text" id="ms-expiry" placeholder="AAAA-MM-GG" /></div>
+      <div class="fg"><label class="fl2">Note</label><input type="text" id="ms-notes" placeholder="Note aggiuntive…" /></div>
+    </div>
+    <p class="hint">📺 Il login Stalker non è verificabile dal browser: l'app salva e copia i dati del portale da usare nel player. La scadenza va inserita a mano.</p>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-stalker')">Annulla</button>
+      <button class="btn btn-accent" id="ms-save" onclick="saveStalker()">Salva</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: GIST -->
 <div class="overlay" id="modal-gist">
   <div class="modal" onclick="event.stopPropagation()">
@@ -610,15 +645,15 @@ body[data-theme="cyan-light"]  { --accent:#0891b2; --accent2:#0e7490; }
    EMBEDDED DATA
 ══════════════════════════════════════════════════════════ */
 // IPTV_DATA_START
-var SAVED = { xtream: [], m3u: [], epg: [] };
+var SAVED = { xtream: [], m3u: [], epg: [], stalker: [] };
 // IPTV_DATA_END
 
 /* ══════════════════════════════════════════════════════════
    STATE
 ══════════════════════════════════════════════════════════ */
-var db = { xtream: [], m3u: [], epg: [] };
+var db = { xtream: [], m3u: [], epg: [], stalker: [] };
 var currentTab = 'xtream';
-var editMode = { xtream: null, m3u: null, epg: null };
+var editMode = { xtream: null, m3u: null, epg: null, stalker: null };
 var gistToken = '', gistId = '';
 var tvMode = false;
 var currentTheme = 'lime';
@@ -641,14 +676,16 @@ function normalizeDb(value){
   var normalized = {
     xtream: Array.isArray(src.xtream) ? src.xtream : [],
     m3u: Array.isArray(src.m3u) ? src.m3u : [],
-    epg: Array.isArray(src.epg) ? src.epg : []
+    epg: Array.isArray(src.epg) ? src.epg : [],
+    stalker: Array.isArray(src.stalker) ? src.stalker : []
   };
-  ['xtream','m3u','epg'].forEach(function(k){
+  ['xtream','m3u','epg','stalker'].forEach(function(k){
     normalized[k] = normalized[k].filter(function(x){
       return x && typeof x === 'object';
     }).map(function(x){
       var y = Object.assign({}, x);
       if (!y.id) y.id = uid();
+      if (k === 'stalker' && y.mac) y.mac = normalizeMac(y.mac);
       return y;
     });
   });
@@ -751,11 +788,11 @@ function toggleTvMode() {
 ══════════════════════════════════════════════════════════ */
 function switchTab(tab) {
   currentTab = tab;
-  ['xtream','m3u','epg'].forEach(function(t) {
+  ['xtream','m3u','epg','stalker'].forEach(function(t) {
     document.getElementById('tab-'+t).classList.toggle('active', t===tab);
     document.getElementById('content-'+t).style.display = t===tab ? '' : 'none';
   });
-  var labels = { xtream:'+ Xtream', m3u:'+ M3U', epg:'+ EPG' };
+  var labels = { xtream:'+ Xtream', m3u:'+ M3U', epg:'+ EPG', stalker:'+ Portale Stalker' };
   document.getElementById('btn-add-main').textContent = labels[tab];
   setTimeout(function(){ window.afterRender && window.afterRender(); }, 50);
 }
@@ -763,6 +800,7 @@ function switchTab(tab) {
 function openAddModal() {
   if (currentTab === 'xtream') openXtreamModal();
   else if (currentTab === 'm3u') openM3UModal();
+  else if (currentTab === 'stalker') openStalkerModal();
   else openEPGModal();
 }
 
@@ -770,14 +808,15 @@ function openAddModal() {
    RENDER
 ══════════════════════════════════════════════════════════ */
 function renderAll() {
-  renderXtream(); renderM3U(); renderEPG(); updateCounts();
+  renderXtream(); renderM3U(); renderEPG(); renderStalker(); updateCounts();
   setTimeout(function(){ window.afterRender && window.afterRender(); }, 60);
 }
 
 function updateCounts() {
-  document.getElementById('tc-xtream').textContent = db.xtream.length;
-  document.getElementById('tc-m3u').textContent    = db.m3u.length;
-  document.getElementById('tc-epg').textContent    = db.epg.length;
+  document.getElementById('tc-xtream').textContent  = db.xtream.length;
+  document.getElementById('tc-m3u').textContent     = db.m3u.length;
+  document.getElementById('tc-epg').textContent     = db.epg.length;
+  document.getElementById('tc-stalker').textContent = db.stalker.length;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1184,6 +1223,111 @@ function delEPG(idx) {
 function cpEpg(i){ cp(db.epg[i].url); }
 
 /* ══════════════════════════════════════════════════════════
+   PORTALE STALKER (catalogo MAC)
+══════════════════════════════════════════════════════════ */
+function normalizeMac(v) {
+  var hex = String(v || '').toUpperCase().replace(/[^0-9A-F]/g, '').slice(0, 12);
+  var out = [];
+  for (var i = 0; i < hex.length; i += 2) out.push(hex.substr(i, 2));
+  return out.join(':');
+}
+
+function isValidMac(v) { return /^[0-9A-F]{2}(:[0-9A-F]{2}){5}$/.test(v); }
+
+/* Formatta il campo MAC mentre si digita, mantenendo il cursore. */
+function formatMacInput(el) {
+  var raw = el.value;
+  var caret = el.selectionStart === null || el.selectionStart === undefined ? raw.length : el.selectionStart;
+  var digitsBefore = raw.slice(0, caret).replace(/[^0-9A-Fa-f]/g, '').length;
+  var out = normalizeMac(raw);
+  el.value = out;
+  if (!el.setSelectionRange) return;
+  var pos = 0, seen = 0;
+  while (pos < out.length && seen < digitsBefore) {
+    if (/[0-9A-F]/.test(out.charAt(pos))) seen++;
+    pos++;
+  }
+  el.setSelectionRange(pos, pos);
+}
+
+function portalUrl(v) {
+  var u = String(v || '').trim();
+  if (!u) return '';
+  if (!/^https?:\/\//i.test(u)) u = 'http://' + u;
+  return u.replace(/\/+$/, '') + '/';
+}
+
+function renderStalker() {
+  var c = document.getElementById('content-stalker');
+  if (!db.stalker.length) { c.innerHTML = emptyHtml('📺','Nessun portale Stalker','Aggiungi URL del portale e indirizzo MAC'); return; }
+  c.innerHTML = db.stalker.map(function(l, i){ return stalkerCard(l, i); }).join('');
+}
+
+function stalkerCard(l, idx) {
+  var exp = l.expiry || '';
+  var d = exp ? daysUntil(exp) : null;
+  var expCls = d === null ? '' : d < 0 ? 'b-exp' : d <= 7 ? 'b-soon' : 'b-ok';
+  return '<div class="card" id="scard-'+idx+'">'
+    +'<div class="card-top"><div class="card-name">'+esc(l.name)+' <span class="badge b-stalker">STALKER</span>'
+    +(exp?'<span class="badge '+expCls+'">📅 '+esc(exp)+'</span>':'')
+    +'</div></div>'
+    +'<div class="fields">'
+    +'<span class="fl">portale</span><span class="fv fv-url">'+esc(portalUrl(l.url))+'</span>'
+    +'<span class="fl">mac</span><span class="fv">'+esc(l.mac||'—')+'</span>'
+    +(l.serial?'<span class="fl">seriale</span><span class="fv">'+esc(l.serial)+'</span>':'')
+    +'</div>'
+    +(l.notes?'<div class="note-line">💬 '+esc(l.notes)+'</div>':'')
+    +'<div class="card-actions">'
+    +'<button class="btn btn-xs" onclick="cpStalkerMac('+idx+')">⎘ MAC</button>'
+    +'<button class="btn btn-xs" onclick="cpStalkerUrl('+idx+')">⎘ URL</button>'
+    +'<button class="btn btn-xs" onclick="cpStalkerAll('+idx+')">⎘ Dati</button>'
+    +'<button class="btn btn-xs btn-icon" onclick="openStalkerModal('+idx+')" title="Modifica">✏️</button>'
+    +'<button class="btn btn-xs btn-icon btn-danger" onclick="delStalker('+idx+')" title="Elimina portale">✖</button>'
+    +'</div></div>';
+}
+
+function openStalkerModal(idx) {
+  editMode.stalker = idx !== undefined ? idx : null;
+  var l = editMode.stalker !== null ? db.stalker[editMode.stalker] : {};
+  document.getElementById('ms-title').textContent = editMode.stalker !== null ? 'Modifica portale Stalker' : 'Nuovo portale Stalker';
+  document.getElementById('ms-name').value   = l.name || '';
+  document.getElementById('ms-url').value    = l.url || '';
+  document.getElementById('ms-mac').value    = l.mac || '';
+  document.getElementById('ms-serial').value = l.serial || '';
+  document.getElementById('ms-expiry').value = l.expiry || '';
+  document.getElementById('ms-notes').value  = l.notes || '';
+  openModal('modal-stalker');
+}
+
+function saveStalker() {
+  var g = function(id){ return document.getElementById(id).value.trim(); };
+  var name = g('ms-name'), url = g('ms-url'), mac = normalizeMac(g('ms-mac'));
+  if (!name || !url || !mac) { alert('Compila titolo, URL server e indirizzo MAC.'); return; }
+  if (!isValidMac(mac)) { alert('Indirizzo MAC non valido: servono 12 caratteri esadecimali (es. 00:1A:79:AA:BB:CC).'); return; }
+  var expiry = g('ms-expiry');
+  if (expiry && !/^\d{4}-\d{2}-\d{2}$/.test(expiry)) { alert('Scadenza non valida: usa il formato AAAA-MM-GG.'); return; }
+  var entry = { id: editMode.stalker !== null ? db.stalker[editMode.stalker].id : uid(),
+    name: name, url: url, mac: mac, serial: g('ms-serial'), expiry: expiry, notes: g('ms-notes') };
+  if (editMode.stalker !== null) db.stalker[editMode.stalker] = entry; else db.stalker.push(entry);
+  closeModal('modal-stalker'); commit(); renderAll(); toast('✓ Portale Stalker salvato');
+}
+
+function delStalker(idx) {
+  if (!confirm('Eliminare questo portale Stalker?')) return;
+  db.stalker.splice(idx, 1); commit(); renderAll();
+}
+
+function cpStalkerMac(i){ cp(db.stalker[i].mac || ''); }
+function cpStalkerUrl(i){ cp((db.stalker[i].url || '').replace(/\/+$/, '')); }
+function cpStalkerAll(i){
+  var l = db.stalker[i];
+  cp('Portale: ' + (l.url || '').replace(/\/+$/, '')
+    + '\nMAC: ' + (l.mac || '')
+    + (l.serial ? '\nSeriale: ' + l.serial : '')
+    + (l.expiry ? '\nScadenza: ' + l.expiry : ''));
+}
+
+/* ══════════════════════════════════════════════════════════
    HELPERS
 ══════════════════════════════════════════════════════════ */
 function populateEpgSelect(selId, currentVal) {
@@ -1588,10 +1732,10 @@ function openEditor() {
   var json = JSON.stringify(db, null, 2);
   document.getElementById('raw-editor').value = json;
   document.getElementById('editor-error').textContent = '';
-  var total = db.xtream.length + db.m3u.length + db.epg.length;
+  var total = db.xtream.length + db.m3u.length + db.epg.length + db.stalker.length;
   document.getElementById('editor-title').textContent = '✏ Editor dati completo';
   document.getElementById('editor-info').textContent =
-    db.xtream.length + ' Xtream · ' + db.m3u.length + ' M3U · ' + db.epg.length + ' EPG — ' + total + ' elementi totali';
+    db.xtream.length + ' Xtream · ' + db.m3u.length + ' M3U · ' + db.epg.length + ' EPG · ' + db.stalker.length + ' Stalker — ' + total + ' elementi totali';
   openModal('modal-editor');
   setTimeout(function(){ document.getElementById('raw-editor').focus(); }, 150);
 }
@@ -1620,18 +1764,18 @@ function saveEditor() {
   try {
     var parsed = JSON.parse(text);
     var newDb;
-    if (parsed.xtream !== undefined || parsed.m3u !== undefined || parsed.epg !== undefined) {
+    if (parsed.xtream !== undefined || parsed.m3u !== undefined || parsed.epg !== undefined || parsed.stalker !== undefined) {
       newDb = normalizeDb(parsed);
     } else if (Array.isArray(parsed)) {
-      newDb = normalizeDb({ xtream: parsed, m3u: db.m3u, epg: db.epg });
+      newDb = normalizeDb({ xtream: parsed, m3u: db.m3u, epg: db.epg, stalker: db.stalker });
     } else {
-      throw new Error('Formato non riconosciuto. Usa {xtream:[...], m3u:[...], epg:[...]}');
+      throw new Error('Formato non riconosciuto. Usa {xtream:[...], m3u:[...], epg:[...], stalker:[...]}');
     }
     db = newDb;
     errEl.textContent = '';
     closeModal('modal-editor');
     commit(); renderAll();
-    toast('✓ Dati salvati — ' + (db.xtream.length+db.m3u.length+db.epg.length) + ' elementi');
+    toast('✓ Dati salvati — ' + (db.xtream.length+db.m3u.length+db.epg.length+db.stalker.length) + ' elementi');
   } catch(e) {
     errEl.textContent = '⚠ JSON non valido: ' + e.message;
   }
@@ -1757,7 +1901,7 @@ async function gistPull(silent) {
     }
     if (!content || !content.trim()) throw new Error('File vuoto nel Gist');
     var parsed = JSON.parse(content);
-    if (parsed.xtream !== undefined || parsed.m3u !== undefined || parsed.epg !== undefined) {
+    if (parsed.xtream !== undefined || parsed.m3u !== undefined || parsed.epg !== undefined || parsed.stalker !== undefined) {
       db = normalizeDb(parsed);
     } else if (Array.isArray(parsed.lists)) {
       db = normalizeDb({ xtream: parsed.lists });
@@ -1772,7 +1916,7 @@ async function gistPull(silent) {
     autoCheckPool = {};
     setGistStatus('ok', 'Aggiornato · ' + new Date().toLocaleTimeString('it-IT'));
     renderAll();
-    if (!silent) toast('✓ Sync: ' + db.xtream.length + ' Xtream, ' + db.m3u.length + ' M3U, ' + db.epg.length + ' EPG');
+    if (!silent) toast('✓ Sync: ' + db.xtream.length + ' Xtream, ' + db.m3u.length + ' M3U, ' + db.epg.length + ' EPG, ' + db.stalker.length + ' Stalker');
     else toast('☁ Liste aggiornate dal cloud');
     return true;
   } catch(e) { setGistStatus('err', 'Errore'); toast('⚠ Pull: ' + e.message); return false; }
