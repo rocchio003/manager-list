@@ -121,6 +121,44 @@ body.tv-mode .tv-focus { outline-width: 2px !important; }
 .section-label { font-size: 10px; font-family: var(--mono); letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase; }
 .section-sep { font-size: 10px; font-family: var(--mono); letter-spacing: 0.10em; color: var(--muted); text-transform: uppercase; margin: 1.75rem 0 0.7rem; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
 
+/* ── STATUS BAR (riepilogo verifiche) ── */
+.status-bar { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--r2); padding: 12px 14px; margin-bottom: 1.25rem; }
+.status-chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.status-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--border2); background: var(--surface2);
+  color: var(--text); font-family: var(--mono); font-size: 11px; font-weight: 500;
+  padding: 5px 11px; border-radius: 20px; cursor: pointer; line-height: 1.2;
+  transition: transform .12s, box-shadow .12s, filter .12s;
+}
+.status-chip:hover { filter: brightness(1.18); }
+.status-chip:active { transform: scale(.96); }
+.status-chip b { font-weight: 700; }
+.status-chip.active { box-shadow: inset 0 0 0 1px currentColor, 0 0 0 2px var(--surface), 0 0 0 3px currentColor; }
+.s-free    { background:#162806; color:var(--accent);  border-color:#2a4a0c; }
+.s-busy,
+.s-soon    { background:#2c1e04; color:var(--orange);  border-color:#4a3510; }
+.s-full,
+.s-expired,
+.s-offline,
+.s-invalid { background:#2c0808; color:var(--red);     border-color:#4a1212; }
+.s-unk,
+.s-checking{ background:var(--surface2); color:var(--muted2); border-color:var(--border2); }
+.status-bar-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+.status-last { font-size: 10px; font-family: var(--mono); color: var(--muted); }
+body.tv-mode .status-bar { padding: 16px 18px; border-radius: 16px; }
+body.tv-mode .status-chip { font-size: 13px; padding: 8px 15px; }
+body.tv-mode .status-last { font-size: 12px; }
+body[data-theme$="-light"] .s-free    { background:#e8f5d6; color:#3a7d00; border-color:#bfe08f; }
+body[data-theme$="-light"] .s-busy,
+body[data-theme$="-light"] .s-soon    { background:#fff3d6; color:#b37400; border-color:#f0d79a; }
+body[data-theme$="-light"] .s-full,
+body[data-theme$="-light"] .s-expired,
+body[data-theme$="-light"] .s-offline,
+body[data-theme$="-light"] .s-invalid { background:#ffe0e0; color:#c40000; border-color:#f2b3b3; }
+body[data-theme$="-light"] .s-unk,
+body[data-theme$="-light"] .s-checking { background:#e8eaef; color:#4b5563; border-color:#d1d5db; }
+
 /* ── CARDS ── */
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r2); padding: 1rem 1.25rem; margin-bottom: 10px; transition: border-color 0.14s; }
 .card:hover { border-color: var(--border2); }
@@ -592,6 +630,8 @@ var autoCheckPool = {};
 var dirtySort = false;
 var suppressCommit = false;
 var autoCheckRunning = false;
+var xtreamFilter = null;   // filtro attivo sul riepilogo di stato
+var lastCheckAt = 0;       // timestamp dell'ultimo controllo completato
 
 /* ══════════════════════════════════════════════════════════
    DATA NORMALIZATION
@@ -741,66 +781,177 @@ function updateCounts() {
 }
 
 /* ══════════════════════════════════════════════════════════
+   STATO LISTA — online / occupata / esaurita / scaduta
+══════════════════════════════════════════════════════════ */
+var HEALTH_META = {
+  free:     { label:'Online e libere',        chip:'🟢 Online',          cls:'s-free' },
+  busy:     { label:'Occupate',               chip:'🟠 Occupate',        cls:'s-busy' },
+  full:     { label:'Connessioni esaurite',   chip:'🔴 Esaurite',        cls:'s-full' },
+  expired:  { label:'Scadute',                chip:'📅 Scadute',         cls:'s-expired' },
+  soon:     { label:'In scadenza',            chip:'⏰ In scadenza',     cls:'s-soon' },
+  offline:  { label:'Offline',                chip:'⚫ Offline',         cls:'s-offline' },
+  invalid:  { label:'Credenziali non valide', chip:'🔐 Cred. non valide',cls:'s-invalid' },
+  checking: { label:'Verifica in corso',      chip:'⏳ Verifica',        cls:'s-checking' },
+  unk:      { label:'Da verificare',          chip:'❓ Da verificare',   cls:'s-unk' }
+};
+var HEALTH_ORDER = ['free','busy','full','expired','soon','offline','invalid','unk','checking'];
+
+/* Scadenza effettiva: quella del server se disponibile, altrimenti quella salvata. */
+function effExpiry(l, idx) {
+  var info = liveCache[liveKey('x', idx)];
+  if (info && info.id && info.id !== l.id) info = null;
+  if (info && info.state === 'online' && info.expiry) return info.expiry;
+  return l.expiry || '';
+}
+
+/* Sintetizza connessione + scadenza in un unico stato.
+   Priorità: offline → cred. non valide → scaduta → esaurita → occupata →
+   in scadenza → libera → da verificare. */
+function healthOf(l, idx) {
+  var info = liveCache[liveKey('x', idx)];
+  if (info && info.id && info.id !== l.id) info = null;   // indice riciclato dopo un delete
+
+  var expiry = effExpiry(l, idx);
+  var d = expiry ? daysUntil(expiry) : null;
+
+  if (info && info.state === 'checking') return 'checking';
+  if (info && info.state === 'offline')  return 'offline';
+  if (info && info.state === 'invalid')  return 'invalid';
+
+  if (info && info.state === 'online') {
+    if (d !== null && d < 0) return 'expired';
+    var full = info.full !== undefined ? info.full : (info.max > 0 && info.active >= info.max);
+    if (full) return 'full';
+    if (info.active > 0) return 'busy';
+    if (d !== null && d <= 7) return 'soon';
+    return 'free';
+  }
+
+  // Nessun dato live: si usa solo la scadenza salvata
+  if (d !== null && d < 0) return 'expired';
+  if (d !== null && d <= 7) return 'soon';
+  return 'unk';
+}
+
+function healthBadge(h, exp) {
+  var d = exp ? daysUntil(exp) : null;
+  var map = {
+    free:     ['b-ok',  'ONLINE'],
+    busy:     ['b-soon','OCCUPATA'],
+    full:     ['b-exp', 'ESAURITA'],
+    expired:  ['b-exp', 'SCADUTA'],
+    soon:     ['b-soon', d !== null ? 'SCADE IN ' + d + 'GG' : 'IN SCADENZA'],
+    offline:  ['b-exp', 'OFFLINE'],
+    invalid:  ['b-exp', 'CRED. NON VALIDE'],
+    checking: ['b-soon','VERIFICA…'],
+    unk:      ['b-unk', 'DA VERIFICARE']
+  };
+  var m = map[h] || map.unk;
+  return '<span class="badge ' + m[0] + '">' + m[1] + '</span>';
+}
+
+function expiryBadge(exp) {
+  if (!exp) return '';
+  var d = daysUntil(exp);
+  var cls = d < 0 ? 'b-exp' : d <= 7 ? 'b-soon' : 'b-ok';
+  return '<span class="badge ' + cls + '">📅 ' + exp + '</span>';
+}
+
+function lastCheckHtml(info) {
+  if (!info || !info.checkedAt) return '';
+  return '<span style="color:var(--muted)">🕒 ' + new Date(info.checkedAt).toLocaleTimeString('it-IT') + '</span>';
+}
+
+function countHealth() {
+  var counts = {};
+  db.xtream.forEach(function(l, i) {
+    var h = healthOf(l, i);
+    counts[h] = (counts[h] || 0) + 1;
+  });
+  return counts;
+}
+
+function statusBarHtml(counts) {
+  var chips = HEALTH_ORDER.filter(function(k){ return counts[k]; }).map(function(k) {
+    var m = HEALTH_META[k];
+    var act = xtreamFilter === k ? ' active' : '';
+    return '<button class="status-chip ' + m.cls + act + '" onclick="toggleFilter(\'' + k + '\')" title="Mostra: ' + m.label + '">'
+         + m.chip + ' <b>' + counts[k] + '</b></button>';
+  }).join('');
+
+  if (!chips) chips = '<span class="status-last">Nessun dato di stato disponibile.</span>';
+  var last = lastCheckAt ? new Date(lastCheckAt).toLocaleTimeString('it-IT') : 'mai';
+  return '<div class="status-bar" id="xtream-status-bar">'
+    + '<div class="status-chips">' + chips + '</div>'
+    + '<div class="status-bar-foot">'
+    + '<span class="status-last">Ultimo controllo: ' + last + (xtreamFilter ? ' · filtro attivo' : '') + '</span>'
+    + '<button class="btn btn-xs" onclick="recheckAll()" title="Ricontrolla tutte le liste">⟳ Verifica tutte</button>'
+    + '</div>'
+    + '</div>';
+}
+
+function toggleFilter(k) {
+  xtreamFilter = (xtreamFilter === k) ? null : k;
+  renderXtream();
+  setTimeout(function(){ window.afterRender && window.afterRender(); }, 40);
+}
+
+function recheckAll() {
+  if (autoCheckRunning) { toast('⏳ Verifica già in corso…'); return; }
+  if (!db.xtream.length && !db.m3u.length) { toast('Nessuna lista da verificare'); return; }
+  toast('⟳ Verifica di tutte le liste…');
+  autoCheckAll();
+}
+
+/* Aggiorna solo la barra di riepilogo, senza ridisegnare le card
+   (così il pannello di test aperto non si chiude). */
+function refreshStatusBar() {
+  var bar = document.getElementById('xtream-status-bar');
+  if (!bar) return;
+  bar.outerHTML = statusBarHtml(countHealth());
+}
+
+/* ══════════════════════════════════════════════════════════
    XTREAM
 ══════════════════════════════════════════════════════════ */
 function renderXtream() {
   var c = document.getElementById('content-xtream');
   if (!db.xtream.length) { c.innerHTML = emptyHtml('🔑','Nessuna lista Xtream','Aggiungi le credenziali host / username / password'); return; }
-  var groups = { ok:[], soon:[], unk:[], exp:[], off:[], busy:[] };
-  db.xtream.forEach(function(l,i){
-    var g = groupOf(l, i);
-    (groups[g] || groups.unk).push([l,i]);
-  });
-  var order = [['off','Offline / non valide'],['busy','Connessioni esaurite'],
-               ['exp','Scadute'],['soon','In scadenza'],['ok','Attive'],['unk','Da verificare']];
-  var html = '';
-  for (var oi=0; oi<order.length; oi++) {
-    var k=order[oi][0], lbl=order[oi][1];
-    if (!groups[k].length) continue;
-    html += '<div class="section-sep">'+lbl+' ('+groups[k].length+')</div>';
-    for (var gi=0; gi<groups[k].length; gi++) html += xtreamCard(groups[k][gi][0], groups[k][gi][1]);
+
+  var items = db.xtream.map(function(l, i) { return { l:l, i:i, h:healthOf(l, i) }; });
+  var html = statusBarHtml(countHealth());
+
+  if (xtreamFilter) {
+    var m = HEALTH_META[xtreamFilter];
+    var sel = items.filter(function(it){ return it.h === xtreamFilter; });
+    html += '<div class="section-sep">' + (m ? m.label : xtreamFilter) + ' (' + sel.length + ')</div>';
+    if (!sel.length) {
+      html += '<div class="empty" style="padding:2.5rem 1rem"><p>Nessuna lista in questa categoria</p><small>Tocca di nuovo il filtro per rimuoverlo</small></div>';
+    } else {
+      sel.forEach(function(it){ html += xtreamCard(it.l, it.i); });
+    }
+  } else {
+    ['offline','invalid','expired','full','busy','soon','free','unk','checking'].forEach(function(k) {
+      var grp = items.filter(function(it){ return it.h === k; });
+      if (!grp.length) return;
+      html += '<div class="section-sep">' + HEALTH_META[k].label + ' (' + grp.length + ')</div>';
+      grp.forEach(function(it){ html += xtreamCard(it.l, it.i); });
+    });
   }
   c.innerHTML = html;
-}
-
-/* Raggruppa per stato live (se noto), altrimenti per scadenza. */
-function groupOf(l, idx) {
-  var info = liveCache[liveKey('x', idx)];
-  if (info && info.state) {
-    if (info.state === 'offline' || info.state === 'invalid') return 'off';
-    if (info.state === 'online') {
-      var full = info.full !== undefined ? info.full : (info.max > 0 && info.active >= info.max);
-      if (full) return 'busy';
-    }
-  }
-  return xStatus(l);
-}
-
-function xStatus(l) {
-  if (!l.expiry) return l.status||'unk';
-  var d = daysUntil(l.expiry);
-  return d<0?'exp':d<=7?'soon':'ok';
 }
 
 function daysUntil(d) { return Math.ceil((new Date(d)-new Date())/86400000); }
 
 function xtreamCard(l, idx) {
-  var st=xStatus(l), days=l.expiry?daysUntil(l.expiry):null;
-  var bm = {
-    ok:  ['b-ok','ATTIVA'],
-    soon:['b-soon', days!==null?'SCADE IN '+days+'GG':'IN SCADENZA'],
-    exp: ['b-exp','SCADUTA'],
-    unk: ['b-unk','N/D']
-  };
-  var bmc = (bm[st]||bm.unk)[0], bml = (bm[st]||bm.unk)[1];
+  var h = healthOf(l, idx), exp = effExpiry(l, idx);
   var epgName = l.epg ? ((db.epg.filter(function(e){return e.id===l.epg;})[0])||{}).name||'' : '';
   var nativeEpg = (l.host||'').replace(/\/$/,'') + '/xmltv.php?username=' + encodeURIComponent(l.user||'') + '&password=' + encodeURIComponent(l.pass||'');
   var live = liveCache[liveKey('x', idx)];
   return '<div class="card" id="xcard-'+idx+'">'
     +'<div class="card-top">'
-    +'<div class="card-name">'+esc(l.name)+' <span class="badge '+bmc+'">'+bml+'</span>'
-    +'<span id="xstatus-'+idx+'">'+statusBadge(live)+'</span></div>'
-    +'<div class="card-meta"><span id="xexp-'+idx+'">'+(l.expiry?'📅 '+esc(l.expiry):'')+'</span> <span id="xconn-'+idx+'">'+connBadge(live)+'</span></div>'
+    +'<div class="card-name">'+esc(l.name)+' <span id="xstatus-'+idx+'">'+healthBadge(h, exp)+'</span></div>'
+    +'<div class="card-meta"><span id="xexp-'+idx+'">'+expiryBadge(exp)+'</span> <span id="xconn-'+idx+'">'+connBadge(live)+'</span> <span id="xtime-'+idx+'">'+lastCheckHtml(live)+'</span></div>'
     +'</div>'
     +'<div class="fields">'
     +'<span class="fl">host</span><span class="fv fv-url">'+esc(l.host)+'</span>'
@@ -918,7 +1069,7 @@ function m3uCard(l,idx) {
   return '<div class="card" id="mcard-'+idx+'">'
     +'<div class="card-top"><div class="card-name">'+esc(l.name)+' <span class="badge b-m3u">M3U</span>'
     +'<span id="mstatus-'+idx+'">'+statusBadge(live)+'</span></div>'
-    +'<div class="card-meta"><span id="mconn-'+idx+'">'+connBadge(live)+'</span></div></div>'
+    +'<div class="card-meta"><span id="mtime-'+idx+'">'+lastCheckHtml(live)+'</span></div></div>'
     +'<div class="fields"><span class="fl">url</span><span class="fv fv-url">'+esc(l.url)+'</span>'
     +(epgObj?'<span class="fl">epg</span><span class="fv"><span class="badge b-epg">📡 '+esc(epgObj.name)+'</span></span>':'')
     +'</div>'
@@ -1236,15 +1387,15 @@ function probeViaProxy(apiUrl, json) {
 function liveKey(type, idx) { return type + ':' + idx; }
 
 function connBadge(info) {
-  if (!info) return '<span class="badge b-unk">—</span>';
-  if (info.state === 'online') {
-    var full = info.full !== undefined ? info.full : (info.max > 0 && info.active >= info.max);
-    var cls = full ? 'b-exp' : (info.active > 0 ? 'b-soon' : 'b-ok');
-    var txt = info.max > 0 ? (info.active + '/' + info.max) : String(info.active);
-    return '<span class="badge ' + cls + '">🔌 ' + txt + '</span>';
-  }
-  if (info.state === 'reachable') return '<span class="badge b-unk">🔌 ?</span>';
-  return '<span class="badge b-unk">🔌 —</span>';
+  if (!info || info.state !== 'online') return '';
+  var hasMax = info.max !== undefined && info.max !== null;
+  var hasActive = info.active !== undefined && info.active !== null;
+  if (!hasActive && !hasMax) return '';
+  var active = hasActive ? info.active : 0;
+  var full = info.full !== undefined ? info.full : (hasMax && info.max > 0 && active >= info.max);
+  var cls = full ? 'b-exp' : (active > 0 ? 'b-soon' : 'b-ok');
+  var txt = (hasMax && info.max > 0) ? (active + '/' + info.max) : String(active);
+  return '<span class="badge ' + cls + '">🔌 ' + txt + '</span>';
 }
 
 function statusBadge(info) {
@@ -1272,20 +1423,13 @@ function paintLive(type, idx) {
   if (!item) return;
   if (info && info.id && info.id !== item.id) { delete liveCache[liveKey(type, idx)]; info = null; }
   var sb = document.getElementById(prefix + 'status-' + idx);
-  if (sb) sb.innerHTML = statusBadge(info);
+  if (sb) sb.innerHTML = type === 'x' ? healthBadge(healthOf(item, idx), effExpiry(item, idx)) : statusBadge(info);
   var cb = document.getElementById(prefix + 'conn-' + idx);
   if (cb) cb.innerHTML = connBadge(info);
   var eb = document.getElementById(prefix + 'exp-' + idx);
-  if (eb) {
-    var exp = expiryFromInfo(info);
-    if (exp) {
-      var d = daysUntil(exp);
-      var cls = d < 0 ? 'b-exp' : d <= 7 ? 'b-soon' : 'b-ok';
-      eb.innerHTML = '<span class="badge ' + cls + '">📅 ' + exp + '</span>';
-    } else {
-      eb.innerHTML = '';
-    }
-  }
+  if (eb) eb.innerHTML = type === 'x' ? expiryBadge(effExpiry(item, idx)) : expiryBadge(expiryFromInfo(info));
+  var tb = document.getElementById(prefix + 'time-' + idx);
+  if (tb) tb.innerHTML = lastCheckHtml(info);
 }
 
 /* ── CHECK DI UNA LISTA (usato sia dall'avvio sia dal pulsante) ── */
@@ -1306,8 +1450,10 @@ function checkServer(type, idx) {
     info.checkedAt = Date.now();
     liveCache[key] = info;
     delete autoCheckPool[key];
+    lastCheckAt = info.checkedAt;
     paintLive(type, idx);
     renderResult(type, idx, info);
+    if (autoCheckRunning) dirtySort = true;
     // Se il server ha dato una scadenza, allinea il dato salvato
     if (type === 'x' && info.state === 'online' && info.expiry && db.xtream[idx]) {
       if (db.xtream[idx].expiry !== info.expiry) {
@@ -1317,12 +1463,16 @@ function checkServer(type, idx) {
       }
     }
     if (expiryChanged) { commit(); dirtySort = true; }
+    refreshStatusBar();
   }).catch(function(e){
-    var err = { state:'offline', error: e && e.message };
+    var err = { state:'offline', error: e && e.message, id: item.id, checkedAt: Date.now() };
     liveCache[key] = err;
     delete autoCheckPool[key];
+    lastCheckAt = err.checkedAt;
     paintLive(type, idx);
     renderResult(type, idx, err);
+    if (autoCheckRunning) dirtySort = true;
+    refreshStatusBar();
   });
 }
 
@@ -1348,39 +1498,44 @@ function renderResult(type, idx, info) {
     return (extra ? '<br>' : '') + '<span style="color:var(--muted2);font-size:11px">⚠ ' + base + '</span>';
   };
 
+  var foot = info.checkedAt ? '<br><span style="color:var(--muted);font-size:11px">🕒 Controllato alle ' + new Date(info.checkedAt).toLocaleTimeString('it-IT') + '</span>' : '';
+
   if (info.state === 'online' && type === 'x') {
     var color = info.full ? 'var(--red)' : info.active > 0 ? 'var(--orange)' : 'var(--accent)';
+    var connWord = info.full ? '<b style="color:var(--red)">ESAURITE</b>'
+                 : info.active > 0 ? '<b style="color:var(--orange)">OCCUPATE</b>'
+                 : '<b style="color:var(--accent)">LIBERE</b>';
     var serverLine = info.server ? '<br><span style="color:var(--muted2)">Server: </span>' + esc(info.server) + (info.port ? ':' + info.port : '') : '';
     var expStr = info.expTs ? info.expTs.toLocaleDateString('it-IT') : 'N/D';
     res.className = 'test-result online';
     res.innerHTML =
       '✅ Server <b>ONLINE</b><br>' +
       '<span style="color:var(--muted2)">Connessioni: </span><span style="color:' + color + '">' + info.active + ' / ' + info.max + '</span>' +
-      (info.max <= 0 ? ' <span style="color:var(--muted2)">(n/d)</span>' : (info.full ? ' — <b style="color:var(--red)">ESAURITE</b>' : ' — <span style="color:var(--accent)">libere</span>')) + '<br>' +
+      (info.max <= 0 ? ' <span style="color:var(--muted2)">(n/d)</span>' : ' — ' + connWord) + '<br>' +
       '<span style="color:var(--muted2)">Scadenza: </span>' + expStr + serverLine +
-      (info.full ? '<br><span style="color:var(--red)">⚠ Connessioni esaurite</span>' : '') +
-      (info.status ? '<br><span style="color:var(--muted2)">Stato: </span>' + esc(info.status) : '');
+      (info.full ? '<br><span style="color:var(--red)">⚠ Connessioni esaurite: impossibile collegarsi</span>' : '') +
+      (info.status ? '<br><span style="color:var(--muted2)">Stato: </span>' + esc(info.status) : '') + foot;
     return;
   }
 
   if (info.state === 'online') {
     res.className = 'test-result online';
-    res.innerHTML = '✅ Server <b>ONLINE</b> — playlist raggiungibile';
+    res.innerHTML = '✅ Server <b>ONLINE</b> — playlist raggiungibile' + foot;
     return;
   }
   if (info.state === 'invalid') {
     res.className = 'test-result offline';
-    res.innerHTML = '❌ Credenziali non valide o account disabilitato';
+    res.innerHTML = '❌ Credenziali non valide o account disabilitato' + foot;
     return;
   }
   if (info.state === 'reachable') {
     res.className = 'test-result online';
-    res.innerHTML = '✅ Server <b>RAGGIUNGIBILE</b> (dettagli nascosti)' + corsHint();
+    res.innerHTML = '✅ Server <b>RAGGIUNGIBILE</b> (dettagli nascosti)' + corsHint() + foot;
     return;
   }
   res.className = 'test-result offline';
   var errHint = isWebView() ? '<br><span style="color:var(--muted2);font-size:11px">💡 Prova ad aprire il file direttamente nel browser.</span>' : '';
-  res.innerHTML = '❌ Server non raggiungibile' + (info && info.error ? ' (' + esc(info.error) + ')' : '') + errHint;
+  res.innerHTML = '❌ Server non raggiungibile' + (info && info.error ? ' (' + esc(info.error) + ')' : '') + errHint + foot;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1414,9 +1569,11 @@ function autoCheckAll() {
       var changed = dirtySort;
       dirtySort = false;
       if (changed) {
-        // Riordina le sezioni ora che scadenze e stati sono noti
-        renderAll();
+        // Riordina sezioni e riepilogo ora che stati e scadenze sono noti
+        renderXtream(); updateCounts();
         if (gistToken && gistId) gistPush(true);
+      } else {
+        refreshStatusBar();
       }
     }
   }
