@@ -1267,10 +1267,12 @@ function stalkerCard(l, idx) {
   var exp = l.expiry || '';
   var d = exp ? daysUntil(exp) : null;
   var expCls = d === null ? '' : d < 0 ? 'b-exp' : d <= 7 ? 'b-soon' : 'b-ok';
+  var live = liveCache[liveKey('s', idx)];
   return '<div class="card" id="scard-'+idx+'">'
     +'<div class="card-top"><div class="card-name">'+esc(l.name)+' <span class="badge b-stalker">STALKER</span>'
     +(exp?'<span class="badge '+expCls+'">📅 '+esc(exp)+'</span>':'')
-    +'</div></div>'
+    +'<span id="sstatus-'+idx+'">'+statusBadge(live)+'</span>'
+    +'</div><div class="card-meta"><span id="stime-'+idx+'">'+lastCheckHtml(live)+'</span></div></div>'
     +'<div class="fields">'
     +'<span class="fl">portale</span><span class="fv fv-url">'+esc(portalUrl(l.url))+'</span>'
     +'<span class="fl">mac</span><span class="fv">'+esc(l.mac||'—')+'</span>'
@@ -1281,9 +1283,18 @@ function stalkerCard(l, idx) {
     +'<button class="btn btn-xs" onclick="cpStalkerMac('+idx+')">⎘ MAC</button>'
     +'<button class="btn btn-xs" onclick="cpStalkerUrl('+idx+')">⎘ URL</button>'
     +'<button class="btn btn-xs" onclick="cpStalkerAll('+idx+')">⎘ Dati</button>'
+    +'<button class="btn btn-xs" onclick="toggleTest(\'s\','+idx+')" title="Verifica portale">📶 Stato</button>'
     +'<button class="btn btn-xs btn-icon" onclick="openStalkerModal('+idx+')" title="Modifica">✏️</button>'
     +'<button class="btn btn-xs btn-icon btn-danger" onclick="delStalker('+idx+')" title="Elimina portale">✖</button>'
-    +'</div></div>';
+    +'</div>'
+    +'<div class="test-panel" id="stest-'+idx+'">'
+    +'<div class="test-row">'
+    +'<button class="btn btn-xs" id="stest-btn-'+idx+'" onclick="checkServerStalker('+idx+')">🔄 Aggiorna</button>'
+    +'<button class="btn btn-xs btn-icon" onclick="toggleTest(\'s\','+idx+')" title="Chiudi">✕</button>'
+    +'</div>'
+    +'<div class="test-result" id="stest-res-'+idx+'"></div>'
+    +'</div>'
+    +'</div>';
 }
 
 function openStalkerModal(idx) {
@@ -1444,7 +1455,8 @@ function getProxyUrl(url) {
    TEST SERVER
 ══════════════════════════════════════════════════════════ */
 function toggleTest(type, idx) {
-  var panel = document.getElementById((type==='x'?'xtest':'mtest')+'-'+idx);
+  var prefix = type === 'x' ? 'xtest' : type === 'm' ? 'mtest' : 'stest';
+  var panel = document.getElementById(prefix + '-' + idx);
   if (!panel) return;
   var wasOpen = panel.classList.contains('open');
   panel.classList.toggle('open');
@@ -1511,6 +1523,40 @@ function probeM3U(item) {
     });
 }
 
+/* Portale Stalker: verifica solo la raggiungibilità del server.
+   Il login reale (handshake + Cookie MAC) non è eseguibile dal browser. */
+function stalkerCandidates(url) {
+  var base = String(url || '').trim().replace(/\/+$/, '');
+  if (!base) return [];
+  if (!/^https?:\/\//i.test(base)) base = 'http://' + base;
+  if (/\.php$/i.test(base)) return [base];
+  return [base + '/portal.php', base + '/server/load.php'];
+}
+
+function probeStalker(item) {
+  var list = stalkerCandidates(item.url);
+  if (!list.length) return Promise.resolve({ state:'unknown', reason:'url mancante' });
+  var i = 0;
+  function next() {
+    if (i >= list.length) return Promise.resolve(null);
+    var u = list[i++];
+    var online = { state:'online', endpoint:u };
+    return fetch(u, { signal: AbortSignal.timeout(8000) })
+      .then(function(r){ return r && r.status < 500 ? online : null; })
+      .catch(function(){ return null; })
+      .then(function(res){
+        if (res) return res;
+        return fetchViaProxy(u).then(function(ok){ return ok ? online : next(); });
+      });
+  }
+  return next().then(function(res){
+    if (res) return res;
+    return fetch(list[0], { mode:'no-cors', signal: AbortSignal.timeout(8000) })
+      .then(function(){ return { state:'reachable', cors:true, endpoint:list[0] }; })
+      .catch(function(){ return { state:'offline' }; });
+  });
+}
+
 function fetchViaProxy(url) {
   var pu = getProxyUrl(url);
   if (!pu) return Promise.resolve(false);
@@ -1561,9 +1607,9 @@ function expiryFromInfo(info) {
 }
 
 function paintLive(type, idx) {
-  var prefix = type === 'x' ? 'x' : 'm';
+  var prefix = type === 'x' ? 'x' : type === 'm' ? 'm' : 's';
   var info = liveCache[liveKey(type, idx)];
-  var item = type === 'x' ? db.xtream[idx] : db.m3u[idx];
+  var item = type === 'x' ? db.xtream[idx] : type === 'm' ? db.m3u[idx] : db.stalker[idx];
   if (!item) return;
   if (info && info.id && info.id !== item.id) { delete liveCache[liveKey(type, idx)]; info = null; }
   var sb = document.getElementById(prefix + 'status-' + idx);
@@ -1571,14 +1617,14 @@ function paintLive(type, idx) {
   var cb = document.getElementById(prefix + 'conn-' + idx);
   if (cb) cb.innerHTML = connBadge(info);
   var eb = document.getElementById(prefix + 'exp-' + idx);
-  if (eb) eb.innerHTML = type === 'x' ? expiryBadge(effExpiry(item, idx)) : expiryBadge(expiryFromInfo(info));
+  if (eb && type !== 's') eb.innerHTML = type === 'x' ? expiryBadge(effExpiry(item, idx)) : expiryBadge(expiryFromInfo(info));
   var tb = document.getElementById(prefix + 'time-' + idx);
   if (tb) tb.innerHTML = lastCheckHtml(info);
 }
 
 /* ── CHECK DI UNA LISTA (usato sia dall'avvio sia dal pulsante) ── */
 function checkServer(type, idx) {
-  var item = type === 'x' ? db.xtream[idx] : db.m3u[idx];
+  var item = type === 'x' ? db.xtream[idx] : type === 'm' ? db.m3u[idx] : db.stalker[idx];
   if (!item) return;
   var key = liveKey(type, idx);
   if (autoCheckPool[key]) return;              // già in corso
@@ -1588,7 +1634,7 @@ function checkServer(type, idx) {
   renderResult(type, idx, { state:'checking' });
 
   var expiryChanged = false;
-  var p = type === 'x' ? probeXtream(item) : probeM3U(item);
+  var p = type === 'x' ? probeXtream(item) : type === 'm' ? probeM3U(item) : probeStalker(item);
   return p.then(function(info){
     info.id = item.id;
     info.checkedAt = Date.now();
@@ -1621,9 +1667,10 @@ function checkServer(type, idx) {
 }
 
 function checkServerM3U(idx) { return checkServer('m', idx); }
+function checkServerStalker(idx) { return checkServer('s', idx); }
 
 function renderResult(type, idx, info) {
-  var prefix = type === 'x' ? 'xtest' : 'mtest';
+  var prefix = type === 'x' ? 'xtest' : type === 'm' ? 'mtest' : 'stest';
   var res = document.getElementById(prefix + '-res-' + idx);
   var btn = document.getElementById(prefix + '-btn-' + idx);
   if (btn) btn.disabled = false;
@@ -1659,6 +1706,15 @@ function renderResult(type, idx, info) {
       '<span style="color:var(--muted2)">Scadenza: </span>' + expStr + serverLine +
       (info.full ? '<br><span style="color:var(--red)">⚠ Connessioni esaurite: impossibile collegarsi</span>' : '') +
       (info.status ? '<br><span style="color:var(--muted2)">Stato: </span>' + esc(info.status) : '') + foot;
+    return;
+  }
+
+  if (info.state === 'online' && type === 's') {
+    var ep = info.endpoint ? '<br><span style="color:var(--muted2)">Endpoint: </span>' + esc(info.endpoint) : '';
+    res.className = 'test-result online';
+    res.innerHTML = '✅ Portale <b>ONLINE</b>' + ep
+      + '<br><span style="color:var(--muted2);font-size:11px">Login e MAC non sono verificabili dal browser.</span>'
+      + foot;
     return;
   }
 
